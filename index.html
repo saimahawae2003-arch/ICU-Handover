@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>ICU Smart Handover & SBAR System Pro</title>
+<link rel="manifest" href="manifest.json" />
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=Sarabun:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0E13; --panel:#121922; --panel2:#161F2A; --line:#25313F;
+    --ink:#E8F0F4; --muted:#7E92A1; --faint:#4B5C6B;
+    --ecg:#34E58C; --spo2:#33C7F0; --amber:#F2B94A; --crit:#FF5A72; --violet:#B98BF5;
+    --chip:#1A2430;
+  }
+  html[data-theme="light"]{
+    --bg:#F2FAF7; --panel:#FFFFFF; --panel2:#EAF7F2; --line:#CFEAE1;
+    --ink:#0E251F; --muted:#4C7B6D; --faint:#8FBBAC;
+    --chip:#E3F5EE;
+    --ecg:#0E9E75; --spo2:#0EA5C4; --amber:#C77B12; --crit:#E5325A; --violet:#8B5CF6;
+    --heading:#0B7D63;
+  }
+  html[data-theme="light"] #slip{ color:#12251f; }
+  html[data-theme="light"] ::placeholder{ color:#A9C7BC; }
+  html[data-theme="light"] .text-slate-100{ color:var(--heading); }
+  html[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator{ filter:none; opacity:.75; cursor:pointer; }
+  *{ font-family:'Sarabun', sans-serif; }
+  h1,h2,h3,.font-display{ font-family:'Kanit', sans-serif; }
+  .mono{ font-family:'JetBrains Mono', monospace; }
+  body{ background: radial-gradient(1200px 600px at 50% -10%, rgba(51,199,240,0.06), transparent), var(--bg); color:var(--ink); }
+  @media screen{ html{ font-size:104%; } }
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.3), 0 6px 20px rgba(0,0,0,0.25); border-left:3px solid var(--line); }
+  .card-s{ border-left-color:var(--crit); } .card-a{ border-left-color:var(--ecg); }
+  .card-b{ border-left-color:var(--violet); } .card-r{ border-left-color:var(--spo2); }
+  .chip{ padding:8px 14px; border-radius:9999px; font-size:14.5px; font-weight:500; border:1px solid var(--line);
+    background:var(--chip); color:var(--ink); cursor:pointer; transition:.12s; user-select:none; display:inline-flex; align-items:center; gap:4px; }
+  .chip:active{ transform:scale(0.96); }
+  .chip.on{ color:#05100C; border-color:transparent; font-weight:600; }
+  .chip-sm{ padding:5px 12px; font-size:13px; }
+  .chip-wide{ padding:15px 18px; font-size:15px; font-weight:600; border-radius:12px; display:flex; flex-direction:row; align-items:center; justify-content:space-between; gap:10px; width:100%; text-align:left; }
+  .chip-flat{ padding:16px 8px; font-size:15px; font-weight:700; border-radius:12px; flex:1; text-align:center; }
+  .chip-wide .pts-tag{ font-size:11.5px; font-weight:600; font-family:'JetBrains Mono',monospace; opacity:.9; padding:3px 10px; border-radius:999px; background:rgba(255,255,255,.14); flex-shrink:0; }
+  .chip-wide.on .pts-tag{ background:rgba(0,0,0,.2); }
+  .bed-btn{ width:56px; height:56px; border-radius:50%; border:1px solid rgba(148,163,184,.35);
+    background:linear-gradient(150deg, rgba(255,255,255,.55), rgba(255,255,255,.12));
+    backdrop-filter:blur(10px) saturate(160%); -webkit-backdrop-filter:blur(10px) saturate(160%);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.5), 0 2px 5px rgba(0,0,0,.08);
+    font-weight:600; font-size:17px; cursor:pointer; transition:.15s; color:var(--ink); font-family:'JetBrains Mono',monospace;
+    display:flex; align-items:center; justify-content:center; }
+  .bed-btn.on{ background:linear-gradient(150deg, var(--spo2), #1b9dc9); border-color:transparent; color:#fff;
+    box-shadow:0 0 0 4px rgba(51,199,240,.22), 0 4px 14px rgba(51,199,240,.45); transform:scale(1.06); }
+  .field-label{ font-size:12px; font-weight:600; color:var(--muted); display:flex; align-items:center; gap:4px; margin-bottom:4px; text-transform:uppercase; letter-spacing:.03em; }
+  .field-input{ width:100%; background:var(--panel2); border:1px solid var(--line); color:var(--ink); border-radius:10px; padding:10px 12px; font-size:15px; outline:none; }
+  .field-input:focus{ border-color:var(--spo2); box-shadow:0 0 0 3px rgba(51,199,240,.15); }
+  input[type="date"]::-webkit-calendar-picker-indicator{ filter:invert(1); opacity:.8; cursor:pointer; }
+  input[type="date"]{ color-scheme:dark; }
+  html[data-theme="light"] input[type="date"]{ color-scheme:light; }
+  .section-badge{ width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:17px; flex-shrink:0; font-family:'JetBrains Mono',monospace; }
+  .badge-s{ background:rgba(255,90,114,.15); color:var(--crit); border:1px solid rgba(255,90,114,.35); }
+  .badge-a{ background:rgba(52,229,140,.15); color:var(--ecg); border:1px solid rgba(52,229,140,.35); }
+  .badge-b{ background:rgba(185,139,245,.15); color:var(--violet); border:1px solid rgba(185,139,245,.35); }
+  .badge-r{ background:rgba(51,199,240,.15); color:var(--spo2); border:1px solid rgba(51,199,240,.35); }
+  ::placeholder{ color:var(--faint); }
+  #slip{ font-family:'JetBrains Mono', monospace; white-space:pre-wrap; font-size:12px; line-height:1.6; color:#1a1a1a; }
+  .subgroup-label{ font-size:11px; font-weight:600; color:var(--faint); margin:8px 0 4px; text-transform:uppercase; letter-spacing:.04em; }
+  .sos-row{ display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px dashed var(--line); font-size:12.5px; }
+  .sos-row:last-child{ border-bottom:none; }
+  .sos-row .pts{ font-family:'JetBrains Mono',monospace; font-weight:700; }
+  .note{ font-size:11px; color:var(--faint); line-height:1.5; }
+  .sos-gauge{ width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background: conic-gradient(var(--ring-color,#3a4757) calc(var(--pct,0)*360deg), rgba(255,255,255,.06) 0);
+    box-shadow:0 0 0 3px rgba(255,255,255,.04), 0 0 var(--glow,0px) var(--ring-color,transparent); transition:.25s; }
+  .sos-gauge-inner{ width:40px; height:40px; border-radius:50%; background:#0B0F14; display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:15px; }
+  .drug-cat-header{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:3px 10px; border-radius:6px; display:inline-block; margin-bottom:6px; }
+  @media print{
+    body *{ visibility:hidden; }
+  }
+</style>
+<style id="dynamicPrintStyle"></style>
+</head>
+<body class="min-h-screen pb-10">
+
+<div class="sticky top-0 z-30" style="background:linear-gradient(180deg,#0D131A,#0A0E13); border-bottom:1px solid var(--line);">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-2">
+      <span class="text-white font-semibold font-display text-sm sm:text-base">🏥 ICU Smart Handover &amp; SBAR Pro</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <button id="themeToggle" onclick="toggleTheme()" class="chip chip-sm font-medium" title="สลับโหมดกลางวัน/กลางคืน">Mode 🌤️</button>
+      <input id="globalSearch" oninput="filterKeywords(this.value)" class="field-input text-xs py-1.5 px-2 w-32 sm:w-48" placeholder="🔍 ค้นหาคีย์เวิร์ด..." />
+      <div class="flex items-center gap-2">
+        <div id="sosGauge" class="sos-gauge"><div class="sos-gauge-inner"><span id="sosNum" class="mono">-</span></div></div>
+        <div class="hidden sm:block">
+          <div class="text-[10px] text-slate-400 uppercase tracking-wide">SOS Score</div>
+          <div id="sosRiskLabelHeader" class="text-xs font-semibold" style="color:var(--muted);">รอข้อมูล</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 py-5 space-y-4 searchable-section">
+
+  <!-- General Info -->
+  <div class="card p-4 sm:p-5">
+    <h2 class="font-display font-semibold text-base mb-3 text-slate-100">🛏️ ข้อมูลทั่วไปผู้ป่วย ICU</h2>
+    <div class="field-label">เลือกเตียงผู้ป่วย</div>
+    <div id="bedGrid" class="grid grid-cols-5 sm:grid-cols-10 gap-3 mb-4"></div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+      <div><div class="field-label">HN</div><input id="hn" class="field-input" placeholder="เช่น 033642" /></div>
+      <div><div class="field-label">ชื่อ-สกุล / อายุ</div><input id="pname" class="field-input" placeholder="ชื่อ... (อายุ...ปี)" /></div>
+      <div><div class="field-label">วันที่ Admit</div><input id="admitDay" type="date" class="field-input" onclick="this.showPicker && this.showPicker()" oninput="calcAdmitDate()" /></div>
+    </div>
+    <div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl mb-4" style="background:var(--panel2); border:1px solid var(--line);">
+      <span id="calculatedStay" class="text-sm font-semibold" style="color:var(--spo2);">📅 วันที่ Admit: - | ระยะเวลา: -</span>
+      <span id="currentShiftDisplay" class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:var(--chip); border:1px solid var(--line); color:var(--muted);">เวร: ยังไม่เลือก</span>
+    </div>
+    <div class="field-label">เวรปฏิบัติงาน (Shift)</div>
+    <div id="shiftGrid" class="flex gap-2"></div>
+    <div class="mt-4"><div class="field-label">ชื่อผู้บันทึก</div>
+      <input id="recordedBy" class="field-input" placeholder="ชื่อผู้ส่งเวร/ผู้บันทึกข้อมูล" oninput="onRecordedByChange()" /></div>
+  </div>
+
+  <!-- S: Situation -->
+  <div class="card card-s p-4 sm:p-5">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="section-badge badge-s">S</div>
+      <div><h2 class="font-display font-semibold text-base leading-tight text-slate-100">Situation — Critical Alerts &amp; Safety Flags</h2>
+      <p class="text-xs" style="color:var(--muted);">Precaution, การให้อาหาร และเป้าหมายของเวรนี้</p></div>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-3">
+      <div><div class="field-label">Infection Control / Precautions</div>
+        <div id="precautionsGrid" class="flex flex-wrap gap-1.5 mb-2"></div>
+        <input id="precautionsCustom" class="field-input hidden" placeholder="ระบุ precaution เพิ่มเติม..." oninput="state.precautionsCustomText=this.value; updateSlip();" /></div>
+      <div><div class="field-label">เชื้อดื้อยา (MDR Organism)</div>
+        <div id="mdrGrid" class="flex flex-wrap gap-1.5 mb-2"></div>
+        <input id="mdrCustom" class="field-input hidden" placeholder="ระบุเชื้อดื้อยาอื่นๆ..." oninput="state.mdrCustomText=this.value; updateSlip();" /></div>
+      <div><div class="field-label">NPO &amp; Feeding Status</div>
+        <div id="feedingGrid" class="flex flex-wrap gap-1.5 mb-2"></div>
+        <input id="feedingCustom" class="field-input hidden" placeholder="ระบุการให้อาหารเพิ่มเติม..." oninput="state.feedingCustomText=this.value; updateSlip();" /></div>
+      <div><div class="field-label">Shift Goal / Care Plan Target</div>
+        <input id="shiftGoal" class="field-input" placeholder="เช่น Extubation Plan วันนี้" oninput="updateSlip()" /></div>
+    </div>
+  </div>
+
+  <!-- B: Background — Diagnosis & Categorized Drugs -->
+  <div class="card card-b p-4 sm:p-5">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="section-badge badge-b">B</div>
+      <div><h2 class="font-display font-semibold text-base leading-tight text-slate-100">Background — Diagnosis, Drugs &amp; ATB</h2>
+      <p class="text-xs" style="color:var(--muted);">โรคหลักและยาที่ให้อยู่ แบ่งหมวดหมู่ชัดเจน</p></div>
+    </div>
+
+    <p class="text-xs mb-2" style="color:var(--muted);">คลิกเลือกโรคสำคัญใน ICU หรือพิมพ์เพิ่ม:</p>
+    <div id="dxQuick" class="flex flex-wrap gap-1.5 mb-3"></div>
+    <div class="flex gap-2 mb-2">
+      <input id="dxCustomInput" class="field-input" placeholder="โรคอื่นๆ (พิมพ์เพิ่มได้เสมอ)" />
+      <button onclick="addCustomDx()" class="px-4 rounded-lg text-white font-medium text-sm" style="background:var(--violet); color:#1a0b2e;">+</button>
+    </div>
+    <div id="dxCustomList" class="flex flex-wrap gap-2 mb-4"></div>
+
+    <span class="drug-cat-header" style="background:rgba(255,90,114,.15); color:var(--crit);">Vasopressor / Inotrope</span>
+    <div id="drugVasoQuick" class="flex flex-wrap gap-1.5 mb-3"></div>
+
+    <span class="drug-cat-header" style="background:rgba(242,185,74,.15); color:var(--amber);">Antibiotics (ATB) / Antifungal</span>
+    <div id="drugAtbQuick" class="flex flex-wrap gap-1.5 mb-3"></div>
+
+    <span class="drug-cat-header" style="background:rgba(51,199,240,.15); color:var(--spo2);">Other Medications / Drips</span>
+    <div id="drugOtherQuick" class="flex flex-wrap gap-1.5 mb-3"></div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-2">
+      <input id="drugName" class="field-input sm:col-span-2" placeholder="ชื่อยา (คลิกเลือกด้านบน หรือพิมพ์เอง — ไม่มีในรายการก็เพิ่มได้เสมอ)" />
+      <input id="drugConc" class="field-input" placeholder="Concentration / Dose" />
+      <input id="drugRate" class="field-input" placeholder="Rate (พิมพ์ หรือคลิกด้านล่าง)" />
+    </div>
+    <div class="field-label">Conc. ที่ใช้บ่อย</div>
+    <div id="concQuick" class="flex flex-wrap gap-1.5 mb-2"></div>
+    <div class="field-label">Rate ที่ใช้บ่อย</div>
+    <div id="rateQuick" class="flex flex-wrap gap-1.5 mb-2"></div>
+    <button onclick="addDrug()" class="px-4 py-2 rounded-lg font-medium text-sm" style="background:var(--violet); color:#1a0b2e;">+ เพิ่มดริปยา / ATB</button>
+    <div id="drugList" class="mt-3 space-y-2"></div>
+  </div>
+
+  <!-- A: Assessment — GCS + SOS Score (choice-based, 6 parameters) -->
+  <div class="card card-a p-4 sm:p-5">
+    <div class="flex items-center gap-3 mb-1">
+      <div class="section-badge badge-a">A</div>
+      <div><h2 class="font-display font-semibold text-base leading-tight text-slate-100">Assessment — GCS &amp; SOS Score</h2>
+      <p class="text-xs" style="color:var(--muted);">คลิกเลือกช่วงค่า ไม่ต้องพิมพ์ตัวเลข — คำนวณคะแนนอัตโนมัติ</p></div>
+    </div>
+    <p class="note mb-3">อ้างอิง: SOS (Search Out Severity) Score — แนวปฏิบัติทีม PCT รพ.บ้านผือ / ใช้แพร่หลายในการเฝ้าระวังก่อนภาวะวิกฤตและ Sepsis ใน รพ. ไทย โปรดเทียบกับแบบฟอร์มฉบับที่หน่วยงานของท่านใช้จริง เนื่องจากบาง รพ. อาจปรับช่วงคะแนนต่างกันเล็กน้อย</p>
+
+    <div class="subgroup-label">GCS (สำหรับบันทึกทางระบบประสาทแยกต่างหาก)</div>
+    <div class="grid sm:grid-cols-3 gap-3 mb-2">
+      <div><div class="field-label">Eye (E)</div><div id="gcsE" class="flex flex-wrap gap-1"></div></div>
+      <div><div class="field-label">Verbal (V)</div><div id="gcsV" class="flex flex-wrap gap-1"></div></div>
+      <div><div class="field-label">Motor (M)</div><div id="gcsM" class="flex flex-wrap gap-1"></div></div>
+    </div>
+    <div class="rounded-xl p-3 mb-4 flex justify-between items-center" style="background:var(--panel2); border:1px solid var(--line);">
+      <span class="text-sm font-medium text-slate-300">GCS <span id="gcsBreakdownLabel" class="mono" style="color:var(--faint); font-size:12px;"></span></span>
+      <span id="gcsTotal" class="font-bold text-lg mono" style="color:var(--ecg);">-</span>
+    </div>
+    <p class="note mb-3">* หากใส่ท่อช่วยหายใจ (ETT/Tracheostomy) ให้เลือก "T-ใส่ท่อ" ในช่อง Verbal — ระบบจะรวมคะแนนเป็น E+M แล้วแสดงผลแบบ "10T" ตามมาตรฐาน</p>
+
+    <div class="subgroup-label">SOS Score — 6 พารามิเตอร์ (คลิกเลือกช่วง)</div>
+
+    <div class="mb-3">
+      <div class="field-label">1. Temperature (T)</div>
+      <div id="sosTempGrid" class="flex flex-col gap-2"></div>
+    </div>
+    <div class="mb-3">
+      <div class="field-label">2. Systolic Blood Pressure (BP)</div>
+      <div id="sosBpGrid" class="flex flex-col gap-2"></div>
+    </div>
+    <div class="mb-3">
+      <div class="field-label">3. Pulse (P)</div>
+      <div id="sosPulseGrid" class="flex flex-col gap-2"></div>
+    </div>
+    <div class="mb-3">
+      <div class="field-label">4. Respiration (R)</div>
+      <div id="sosRespGrid" class="flex flex-col gap-2"></div>
+    </div>
+    <div class="mb-3">
+      <div class="field-label">5. ระดับความรู้สึกตัว (Consciousness)</div>
+      <div id="sosConsciousGrid" class="flex flex-col gap-2"></div>
+    </div>
+    <div class="mb-3">
+      <div class="field-label">6. ปัสสาวะ (Urine Output) — เลือกช่วงเวลาที่วัด</div>
+      <div id="urineIntervalGrid" class="flex flex-wrap gap-1.5 mb-2"></div>
+      <div id="sosUrineGrid" class="flex flex-col gap-2"></div>
+      <p class="note mt-1">* หากยังไม่มีข้อมูลปัสสาวะ (เช่นแรกรับ) สามารถเว้นว่างได้ ระบบจะคำนวณ SOS โดยไม่รวมข้อนี้</p>
+    </div>
+
+    <div id="sosBox" class="rounded-xl p-3" style="background:var(--panel2); border:1px solid var(--line);">
+      <div class="flex justify-between items-center mb-1">
+        <span class="text-sm font-semibold text-slate-200">สรุปคะแนน SOS Score</span>
+        <span id="sosRiskLabel" class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:var(--chip); color:var(--muted);">รอข้อมูล</span>
+      </div>
+      <div id="sosBreakdown"></div>
+      <div class="flex justify-between items-center pt-2 mt-1" style="border-top:1px solid var(--line);">
+        <span class="text-sm font-bold text-slate-200">รวม SOS Score</span>
+        <span id="sosTotalDisplay" class="font-display font-bold text-lg mono" style="color:var(--spo2);">-</span>
+      </div>
+      <p id="sosAction" class="text-xs mt-2 leading-relaxed" style="color:var(--muted);"></p>
+    </div>
+
+    <div class="mt-3">
+      <div class="field-label">หมายเหตุการประเมินเพิ่มเติม</div>
+      <input id="assessNote" class="field-input" placeholder="พิมพ์ข้อสังเกตอื่นๆ เกี่ยวกับอาการผู้ป่วย..." oninput="updateSlip()" />
+    </div>
+  </div>
+
+  <!-- R: Recommendation -->
+  <div class="card card-r p-4 sm:p-5">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="section-badge badge-r">R</div>
+      <div><h2 class="font-display font-semibold text-base leading-tight text-slate-100">Recommendation — Vent, Lines, Labs &amp; Plan</h2>
+      <p class="text-xs" style="color:var(--muted);">สิ่งที่เวรถัดไปต้องติดตามและดำเนินการต่อ</p></div>
+    </div>
+
+    <div class="subgroup-label">โหมดเครื่องช่วยหายใจแบบรุกล้ำ (Invasive — ใส่ท่อ/เจาะคอ)</div>
+    <div class="mb-1"><span class="drug-cat-header" style="background:rgba(255,90,114,.15); color:var(--crit);">AC / SIMV — เลือกโหมดหลักก่อน แล้วเลือกชนิดควบคุม</span></div>
+    <div id="ventMainSplitGrid" class="flex flex-wrap gap-1.5 mb-2"></div>
+    <div id="ventSubModeWrap" class="hidden mb-2">
+      <div class="subgroup-label">ชนิดควบคุม (Control Type)</div>
+      <div id="ventSubModeGrid" class="flex flex-wrap gap-1.5"></div>
+    </div>
+    <div class="mb-1"><span class="drug-cat-header" style="background:rgba(242,185,74,.15); color:var(--amber);">โหมดอื่นๆ (ไม่ต้องเลือก VC/PC ต่อ)</span></div>
+    <div id="ventMainOtherGrid" class="flex flex-wrap gap-1.5 mb-3"></div>
+
+    <div class="subgroup-label">Non-invasive / O2 Support (ไม่ใส่ท่อ)</div>
+    <div class="mb-1"><span class="drug-cat-header" style="background:rgba(51,199,240,.15); color:var(--spo2);">HFNC / Mask / Cannula / อื่นๆ</span></div>
+    <div id="ventO2Grid" class="flex flex-wrap gap-1.5 mb-1"></div>
+    <input id="ventModeCustom" class="field-input text-xs py-1.5 hidden mb-2" placeholder="ระบุโหมด/อุปกรณ์อื่นๆ..." oninput="state.vent.mainModeCustomText=this.value; updateSlip();" />
+
+    <div id="ventFio2Wrap" class="mb-2 mt-2">
+      <div class="subgroup-label">FiO2</div><div id="ventFio2Grid" class="flex flex-wrap gap-1.5"></div>
+    </div>
+    <div id="ventSubParams">
+      <div class="grid grid-cols-2 gap-3 mb-2">
+        <div>
+          <div class="subgroup-label">PEEP (cmH2O)</div><div id="ventPeepGrid" class="flex flex-wrap gap-1.5 mb-1"></div>
+          <input id="ventPeepCustom" class="field-input text-xs py-1.5" placeholder="พิมพ์ค่าอื่น..." oninput="state.vent.peepCustom=this.value; updateSlip();" />
+        </div>
+        <div>
+          <div class="subgroup-label">PS / PC (cmH2O)</div><div id="ventPsGrid" class="flex flex-wrap gap-1.5 mb-1"></div>
+          <input id="ventPsCustom" class="field-input text-xs py-1.5" placeholder="พิมพ์ค่าอื่น..." oninput="state.vent.psCustom=this.value; updateSlip();" />
+        </div>
+      </div>
+    </div>
+    <p id="ventNoneNote" class="note mb-2 hidden">* โหมดนี้ไม่ต้องตั้งค่า PEEP/PS (เช่น HFNC/Mask/Cannula/Room air)</p>
+    <div class="field-label">รายละเอียดเพิ่มเติม (Vt, Set RR, I:E, Flow L/min สำหรับ HFNC/Cannula ฯลฯ — พิมพ์เพิ่มได้เสมอ)</div>
+
+    <input id="ventExtra" class="field-input mb-4" placeholder="เช่น Vt 450 ml, Set RR 14, I:E 1:2" oninput="updateSlip()" />
+
+    <div class="field-label mb-2">8-hr Fluid Balance (ต่อเวร)</div>
+    <div class="grid grid-cols-2 gap-3 mb-2">
+      <div><div class="field-label" style="color:var(--ecg);">Intake (ml) /8hr</div><input id="intake24" class="field-input" placeholder="เช่น 500" oninput="state.io.intake=this.value; updateNetBalance();" /></div>
+      <div><div class="field-label" style="color:var(--crit);">Output (ml) /8hr</div><input id="output24" class="field-input" placeholder="เช่น 400" oninput="state.io.output=this.value; updateNetBalance();" /></div>
+    </div>
+    <div class="rounded-xl p-3 mb-4 flex justify-between items-center" style="background:var(--panel2); border:1px solid var(--line);">
+      <span class="text-sm font-medium text-slate-300">Net Balance</span>
+      <span id="netBalanceDisplay" class="font-bold text-lg mono" style="color:var(--spo2);">-</span>
+    </div>
+
+    <div class="field-label mb-2">ติ๊กเลือกสาย / ท่อระบายในร่างกาย</div>
+    <div id="linesGrid" class="grid sm:grid-cols-3 gap-2 mb-3"></div>
+    <div id="linesDetailArea" class="space-y-3 mb-4"></div>
+
+    <div class="subgroup-label">DTX Monitoring (Capillary Blood Glucose)</div>
+    <div class="field-label">รอบตรวจ (Interval)</div>
+    <div id="dtxIntervalGrid" class="flex flex-wrap gap-1.5 mb-2"></div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
+      <input id="dtxTime" class="field-input" placeholder="เวลา เช่น 08:00" />
+      <input id="dtxValue" class="field-input" placeholder="ค่า DTX (mg/dL)" />
+      <button onclick="addDtxReading()" class="px-4 py-2 rounded-lg font-medium text-sm" style="background:var(--spo2); color:#05141B;">+ เพิ่มค่า DTX</button>
+    </div>
+    <div id="dtxList" class="space-y-1 mb-4"></div>
+
+    <div class="subgroup-label">Labs Monitor</div>
+    <div id="labsGroupsContainer" class="space-y-3 mb-3 mt-1"></div>
+    <div class="field-label mt-1 mb-2">Blood Bank / Other Labs (พิมพ์เพิ่มได้เสมอ)</div>
+    <input id="bloodBankInfo" class="field-input mb-4" placeholder="เช่น PRC O- 2 units matched" oninput="updateSlip()" />
+
+    <div class="subgroup-label">หมายเหตุ / สิ่งที่ต้องติดตามเพิ่มเติม (Pending Tasks)</div>
+    <div id="followupGrid" class="flex flex-wrap gap-1.5 mb-2"></div>
+    <input id="followupCustom" class="field-input hidden mb-2" placeholder="ระบุเพิ่มเติม..." oninput="state.followupCustomText=this.value; updateSlip();" />
+    <div class="field-label">โน้ตอิสระ (พิมพ์อะไรก็ได้ที่นอกเหนือจากช้อยด้านบน)</div>
+    <input id="freeNote" class="field-input" placeholder="พิมพ์โน้ตเพิ่มเติม..." oninput="updateSlip()" />
+  </div>
+
+  <!-- Export / Print Slip -->
+  <div class="card p-4 sm:p-5">
+    <h2 class="font-display font-semibold text-base mb-3 text-slate-100">🖨️ พรีวิวสลิป SBAR</h2>
+    <div class="field-label">ขนาดกระดาษเครื่องพิมพ์ความร้อน (Thermal Printer)</div>
+    <div id="printWidthGrid" class="flex gap-2 mb-3"></div>
+    <div class="rounded-xl p-3 mb-3 bg-white border border-dashed max-w-340px mx-auto" style="border-color:var(--line);">
+      <div id="printArea"><pre id="slip"></pre></div>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-2">
+      <button id="printSlipBtn" onclick="printSlip()" class="flex-1 py-3 rounded-xl font-semibold text-white font-display" style="background:#1E293B;">🖨️ พิมพ์สลิป SBAR</button>
+      <button onclick="copySlip()" class="flex-1 py-3 rounded-xl font-semibold font-display" style="background:var(--spo2); color:#05141B;">📋 คัดลอกข้อความ SBAR</button>
+    </div>
+    <div class="mt-2">
+      <button onclick="shareLine()" class="w-full py-3 rounded-xl font-semibold font-display" style="background:#06C755; color:#ffffff;">📱 แชร์เข้า LINE (ซ่อนชื่อผู้ป่วย เหลือแค่ HN)</button>
+    </div>
+    <p id="copyToast" class="text-center text-sm font-medium mt-2 hidden" style="color:var(--ecg);">คัดลอกสำเร็จ ✓</p>
+  </div>
+
+  <!-- Thermal Label / Sticker Print -->
+  <div class="card p-4 sm:p-5">
+    <h2 class="font-display font-semibold text-base mb-1 text-slate-100">🏷️ พิมพ์สติกเกอร์ซองยา / ใบเสร็จขนาดเล็ก</h2>
+    <p class="text-xs mb-3" style="color:var(--muted);">สรุปย่อสำหรับติดซองยา/ใบเสร็จหน้าเตียง — ใช้กระดาษความร้อนขนาดเดียวกับด้านบน</p>
+    <div class="rounded-xl p-3 mb-3 bg-white border border-dashed max-w-340px mx-auto" style="border-color:var(--line);">
+      <div id="labelPrintArea"><pre id="labelSlip"></pre></div>
+    </div>
+    <button id="printLabelBtn" onclick="printLabel()" class="w-full py-3 rounded-xl font-semibold text-white font-display" style="background:#7C3AED;">🏷️ พิมพ์สติกเกอร์ซองยา</button>
+  </div>
+
+</div>
+
+<script>
+const state = {
+  bed: null, hn:'', pname:'', admitDay:'', shift: null, recordedBy:'', printWidth:'80',
+  gcs: { E: null, V: null, M: null },
+  sos: { temp:null, bp:null, pulse:null, resp:null, conscious:null, urine:null, urineInterval:'1hr' },
+  precautions: [], precautionsCustomText:'',
+  mdr: [], mdrCustomText:'',
+  feeding: '', feedingCustomText:'',
+  dx: [], dxCustom: [],
+  drugs: [],
+  vent: { mode:'', subMode:'', fio2:'', peep:'', ps:'', peepCustom:'', psCustom:'', mainModeCustomText:'' },
+  lines: {},
+  io: { intake:'', output:'' },
+  dtx: { interval:'', readings:[] },
+  labs: { WBC:'', Hb:'', Hct:'', Plt:'', Na:'', K:'', Cl:'', HCO3:'', BUN:'', Cr:'', pH:'', pCO2:'', PaO2:'', Lactate:'' },
+  followup: [], followupCustomText:''
+};
+
+const SHIFTS = [ { id:'morning', label:'☀️ เวรเช้า' }, { id:'afternoon', label:'🌅 เวรบ่าย' }, { id:'night', label:'🌙 เวรดึก' } ];
+const PRECAUTIONS = ['Standard', 'Contact', 'Droplet', 'Airborne', 'Protective/Neutropenic', 'อื่นๆ (ระบุ)'];
+const MDR_ORGANISMS = ['A. baumannii (CRAB/MDR)', 'Pseudomonas aeruginosa (MDR)', 'VRE', 'MRSA', 'ESBL E.coli/Klebsiella', 'CRE', 'อื่นๆ (ระบุ)'];
+const FEEDINGS = ['NPO', 'Sip Feeding', 'Tube Feeding Trophic 10-20 ml/hr', 'Tube Feeding Full Rate', 'Post-pyloric Feeding', 'Total Parenteral Nutrition (TPN)', 'อื่นๆ (ระบุ)'];
+
+const DX_QUICK = [
+  'Septic Shock', 'Cardiogenic Shock', 'Hypovolemic Shock', 'Anaphylactic Shock',
+  'DKA (Diabetic Ketoacidosis)', 'HHS (Hyperosmolar Hyperglycemic State)',
+  'Leptospirosis', 'Dengue Hemorrhagic Fever', 'Severe Malaria',
+  'ARDS', 'Pneumonia - HAP', 'Pneumonia - VAP', 'Status Asthmaticus', 'Acute Exacerbation COPD', 'Pulmonary Embolism',
+  'Acute Heart Failure', 'Acute Coronary Syndrome / STEMI', 'Life-threatening Arrhythmia (VT/VF)', 'Aortic Dissection',
+  'Acute Kidney Injury (AKI)', 'ESRD on Hemodialysis',
+  'TBI (Traumatic Brain Injury)', 'Ischemic Stroke', 'Hemorrhagic Stroke', 'Status Epilepticus', 'Meningoencephalitis',
+  'Upper GI Bleeding', 'Lower GI Bleeding', 'Acute Pancreatitis', 'Hepatic Encephalopathy',
+  'Post Cardiac Arrest (ROSC)', 'Post-operative Monitoring', 'Multiple Trauma', 'Severe Burn Injury', 'Severe Electrolyte Imbalance'
+];
+
+const DRUG_VASO = ['Norepinephrine', 'Epinephrine', 'Vasopressin', 'Phenylephrine', 'Dopamine', 'Dobutamine', 'Milrinone'];
+const DRUG_ATB = ['Meropenem', 'Piperacillin/Tazobactam', 'Colistin', 'Vancomycin', 'Ceftriaxone', 'Levofloxacin', 'Fluconazole', 'Amphotericin B'];
+const DRUG_OTHER = ['Propofol (Sedation)', 'Midazolam (Sedation)', 'Dexmedetomidine (Sedation)', 'Fentanyl Drip', 'Morphine', 'Cisatracurium (Paralytic)',
+  'Regular Insulin Drip', 'Heparin Drip', 'Furosemide Drip', 'Sodium Bicarbonate Drip', 'KCl Replacement', 'MgSO4 Replacement'];
+
+const RATE_QUICK = ['1 ml/hr','2 ml/hr','5 ml/hr','10 ml/hr','15 ml/hr','20 ml/hr','30 ml/hr','50 ml/hr'];
+const CONC_QUICK = [
+  'Norepi 4mg/100ml D5W (40mcg/ml)', 'Norepi 8mg/250ml D5W (32mcg/ml)',
+  'Epinephrine 1mg/100ml D5W (10mcg/ml)', 'Epinephrine 1:1000 (1mg/ml)',
+  'Dopamine 250mg/250ml D5W (1mg/ml)', 'Dobutamine 250mg/250ml D5W (1mg/ml)',
+  'Vasopressin 20u/100ml NSS (0.2u/ml)',
+  'Fentanyl 500mcg/50ml NSS (10mcg/ml)', 'Fentanyl 1000mcg/50ml NSS (20mcg/ml)', 'Fentanyl 2500mcg/50ml NSS (50mcg/ml)', 'Midazolam 50mg/50ml NSS (1mg/ml)',
+  'Propofol 1% (10mg/ml)', 'Dexmedetomidine 200mcg/50ml NSS (4mcg/ml)',
+  'Heparin 25,000u/250ml NSS (100u/ml)', 'Regular Insulin 50u/50ml NSS (1u/ml)',
+  'MgSO4 2g/100ml NSS (20mg/ml)', 'Sodium Bicarbonate 7.5% (50ml)'
+];
+
+const LINES_DEF = [
+  { id:'ett', name:'ET Tube (ETT)', hasSecretion:true },
+  { id:'trach', name:'Tracheostomy', hasSecretion:true },
+  { id:'aline', name:'A-Line (Arterial Line)', hasSecretion:false },
+  { id:'cvc', name:'CVC / Central Line', hasSecretion:false },
+  { id:'foley', name:'Foley Catheter', hasSecretion:false },
+  { id:'icd', name:'ICD (Chest Tube)', hasSecretion:true },
+  { id:'crrt', name:'CRRT / Hemodialysis Catheter', hasSecretion:false }
+];
+const DAYS_OPTS = ['วันนี้ (Day 0)','1-3 วัน','4-7 วัน','8-14 วัน','>14 วัน'];
+const AMOUNT_OPTS = ['ไม่มี','เล็กน้อย','ปานกลาง','มาก'];
+const COLOR_OPTS = ['ใส','ขาว','เหลือง','เขียว','มีเลือดปน'];
+
+const VENT_MAIN_SPLIT = ['AC (Assist-Control)', 'SIMV'];
+const VENT_SUBMODES = ['VCV (Volume Control)', 'PCV (Pressure Control)'];
+const VENT_MAIN_OTHER = ['SPONT (PSV/CPAP)', 'PRVC', 'BiPAP (NIV)'];
+const VENT_O2_DEVICES = ['HFNC', 'Nasal Cannula', 'Simple Face Mask', 'Non-rebreather Mask', 'Venturi Mask', 'T-piece', 'Extubated / Room air', 'อื่นๆ (ระบุ)'];
+const VENT_ROOMAIR = ['Extubated / Room air'];
+const VENT_OTHER_CUSTOM = 'อื่นๆ (ระบุ)';
+const FIO2_OPTS = ['21%','30%','40%','50%','60%','70%','80%','90%','100%'];
+const PEEP_OPTS = ['0','5','6','8','10','12','15','18','20'];
+const PS_OPTS = ['0','5','8','10','12','15','18','20'];
+
+const LABS_GROUPS = [
+  { title:'CBC', color:'var(--ecg)', bg:'rgba(52,229,140,.15)', items:[
+    { key:'WBC', label:'WBC (5-10k)', ph:'5-10k' },
+    { key:'Hb', label:'Hb (12-16)', ph:'12-16' },
+    { key:'Hct', label:'Hct (36-48%)', ph:'36-48' },
+    { key:'Plt', label:'Plt (150-400k)', ph:'150-400' }
+  ]},
+  { title:'Electrolyte (Elyte)', color:'var(--violet)', bg:'rgba(185,139,245,.15)', items:[
+    { key:'Na', label:'Na (135-145)', ph:'135-145' },
+    { key:'K', label:'K (3.5-5.0)', ph:'3.5-5.0' },
+    { key:'Cl', label:'Cl (98-107)', ph:'98-107' },
+    { key:'HCO3', label:'HCO3 (22-26)', ph:'22-26' }
+  ]},
+  { title:'Renal (BUN/Cr)', color:'var(--amber)', bg:'rgba(242,185,74,.15)', items:[
+    { key:'BUN', label:'BUN (7-20)', ph:'7-20' },
+    { key:'Cr', label:'Cr (0.6-1.2)', ph:'0.6-1.2' }
+  ]},
+  { title:'Blood Gas (ABG)', color:'var(--spo2)', bg:'rgba(51,199,240,.15)', items:[
+    { key:'pH', label:'pH (7.35-7.45)', ph:'7.35-7.45' },
+    { key:'pCO2', label:'pCO2 (35-45)', ph:'35-45' },
+    { key:'PaO2', label:'PaO2 (80-100)', ph:'80-100' },
+    { key:'Lactate', label:'Lactate (<2)', ph:'<2' }
+  ]}
+];
+
+const DTX_INTERVALS = ['ทุก 1 ชม.','ทุก 2 ชม.','ทุก 4 ชม.','ทุก 6 ชม.','Pre-meal (ac)','Sliding Scale/PRN'];
+const FOLLOWUP_QUICK = ['ตามญาติ (Contact Relatives)','ตามหมอ (Call Doctor/Consult)','ตามแลป (Pending Lab)','ตาม OR (Follow-up Surgery)','ตาม Imaging (X-ray/CT/US)','นัด Family Meeting','อื่นๆ (ระบุ)'];
+
+/* SOS Score reference data (Search Out Severity Score, PCT รพ.บ้านผือ) */
+const SOS_TEMP = [
+  {label:'≤ 35.0°C', sub:'Hypothermia', pts:2},
+  {label:'35.1-36.0°C', sub:'', pts:1},
+  {label:'36.1-38.0°C', sub:'ปกติ', pts:0},
+  {label:'38.1-38.4°C', sub:'', pts:1},
+  {label:'≥ 38.5°C', sub:'Hyperthermia', pts:2}
+];
+const SOS_BP = [
+  {label:'≤ 80', sub:'mmHg', pts:3},
+  {label:'81-90', sub:'mmHg', pts:2},
+  {label:'91-100', sub:'mmHg', pts:1},
+  {label:'101-180', sub:'ปกติ', pts:0},
+  {label:'181-199', sub:'mmHg', pts:1},
+  {label:'≥ 200', sub:'mmHg', pts:2},
+  {label:'On Vasopressor', sub:'ใช้ยากระตุ้นความดัน', pts:3}
+];
+const SOS_PULSE = [
+  {label:'≤ 40', sub:'/min', pts:3},
+  {label:'41-50', sub:'/min', pts:1},
+  {label:'51-100', sub:'ปกติ', pts:0},
+  {label:'100-120', sub:'/min', pts:1},
+  {label:'121-139', sub:'/min', pts:2},
+  {label:'≥ 140', sub:'/min', pts:3}
+];
+const SOS_RESP = [
+  {label:'≤ 8', sub:'/min', pts:3},
+  {label:'ใส่เครื่องช่วยหายใจ', sub:'On Ventilator', pts:2},
+  {label:'9-20', sub:'ปกติ', pts:0},
+  {label:'21-25', sub:'/min', pts:1},
+  {label:'26-35', sub:'/min', pts:2},
+  {label:'≥ 35', sub:'/min', pts:3}
+];
+const SOS_CONSCIOUS = [
+  {label:'สับสน กระสับกระส่าย', sub:'เพิ่งเกิดขึ้นใหม่', pts:1},
+  {label:'ตื่นดี', sub:'พูดคุยรู้เรื่อง', pts:0},
+  {label:'ซึม', sub:'เรียกแล้วลืมตา', pts:1},
+  {label:'ซึมมาก', sub:'ต้องกระตุ้นจึงลืมตา', pts:2},
+  {label:'ไม่รู้สึกตัว', sub:'แม้กระตุ้นแล้วก็ตาม', pts:3}
+];
+const URINE_INTERVALS = [
+  {id:'1hr', label:'ต่อ 1 ชม.'}, {id:'4hr', label:'ต่อ 4 ชม.'}, {id:'8hr', label:'ต่อ 8 ชม.'}, {id:'24hr', label:'ต่อ 24 ชม. (วัน)'}
+];
+const SOS_URINE = {
+  '1hr':[ {label:'≤ 20 ml', sub:'/hr', pts:2}, {label:'21-39 ml', sub:'/hr', pts:1}, {label:'≥ 40 ml', sub:'ปกติ', pts:0} ],
+  '4hr':[ {label:'≤ 80 ml', sub:'/4hr', pts:2}, {label:'81-159 ml', sub:'/4hr', pts:1}, {label:'≥ 160 ml', sub:'ปกติ', pts:0} ],
+  '8hr':[ {label:'≤ 160 ml', sub:'/8hr', pts:2}, {label:'161-319 ml', sub:'/8hr', pts:1}, {label:'≥ 320 ml', sub:'ปกติ', pts:0} ],
+  '24hr':[ {label:'≤ 500 ml', sub:'/วัน', pts:2}, {label:'501-999 ml', sub:'/วัน', pts:1}, {label:'≥ 1000 ml', sub:'ปกติ', pts:0} ]
+};
+
+/* Bed Grid */
+const bedGrid = document.getElementById('bedGrid');
+for(let i=1;i<=20;i++){
+  const b = document.createElement('button');
+  b.className = 'bed-btn'; b.type = 'x';
+  b.textContent = i;
+  b.onclick = ()=>{ state.bed = i; document.querySelectorAll('.bed-btn').forEach((btn, idx)=>btn.classList.toggle('on', idx+1===i)); updateSlip(); };
+  bedGrid.appendChild(b);
+}
+
+/* Shifts */
+const shiftGrid = document.getElementById('shiftGrid');
+SHIFTS.forEach(s=>{
+  const b = document.createElement('button');
+  b.className = 'chip chip-flat'; b.textContent = s.label; b.type = 'x';
+  b.onclick = ()=>{ state.shift = s.id; document.querySelectorAll('#shiftGrid .chip').forEach(c=>{c.classList.remove('on'); c.style.background='';}); b.classList.add('on'); b.style.background='var(--spo2)'; document.getElementById('currentShiftDisplay').textContent='เวร: '+s.label; updateSlip(); };
+  shiftGrid.appendChild(b);
+});
+
+/* Admit Date Calc — real calendar date, Day-of-Stay computed against today */
+function calcAdmitDate(){
+  const val = document.getElementById('admitDay').value;
+  if(!val){ document.getElementById('calculatedStay').textContent='📅 วันที่ Admit: กรุณาเลือกวันที่'; state.admitDate=''; updateSlip(); return; }
+  state.admitDate = val;
+  const [y,m,d] = val.split('-').map(Number);
+  const admitDateObj = new Date(y, m-1, d);
+  const now = new Date();
+  const todayObj = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diffDays = Math.floor((todayObj - admitDateObj) / 86400000) + 1;
+  const dateDisplay = admitDateObj.toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'numeric' });
+  document.getElementById('calculatedStay').textContent = `📅 Admit: ${dateDisplay} | Day of Stay: Day ${diffDays > 0 ? diffDays : 1}`;
+  updateSlip();
+}
+
+/* Precautions / Feeding */
+function renderOptions(containerId, items, stateKey, isMulti, customInputId, customStateKey, otherLabel){
+  const c = document.getElementById(containerId); c.innerHTML = '';
+  items.forEach(item=>{
+    const isOn = isMulti ? state[stateKey].includes(item) : state[stateKey] === item;
+    const b = document.createElement('button');
+    b.className = 'chip' + (isOn ? ' on' : ''); b.style.background = isOn ? 'var(--crit)' : ''; b.textContent = item;
+    b.onclick = ()=>{
+      if(isMulti){ const idx = state[stateKey].indexOf(item); if(idx>-1) state[stateKey].splice(idx,1); else state[stateKey].push(item); }
+      else { state[stateKey] = (state[stateKey] === item) ? '' : item; }
+      renderOptions(containerId, items, stateKey, isMulti, customInputId, customStateKey, otherLabel); updateSlip();
+    };
+    c.appendChild(b);
+  });
+  if(customInputId){
+    const showCustom = isMulti ? state[stateKey].includes(otherLabel) : state[stateKey] === otherLabel;
+    const input = document.getElementById(customInputId);
+    input.classList.toggle('hidden', !showCustom);
+    if(showCustom) input.value = state[customStateKey] || '';
+  }
+}
+renderOptions('precautionsGrid', PRECAUTIONS, 'precautions', true, 'precautionsCustom', 'precautionsCustomText', 'อื่นๆ (ระบุ)');
+renderOptions('mdrGrid', MDR_ORGANISMS, 'mdr', true, 'mdrCustom', 'mdrCustomText', 'อื่นๆ (ระบุ)');
+renderOptions('feedingGrid', FEEDINGS, 'feeding', false, 'feedingCustom', 'feedingCustomText', 'อื่นๆ (ระบุ)');
+
+/* GCS */
+const GCS_E = [{v:4,l:'4-Spontaneous'},{v:3,l:'3-Speech'},{v:2,l:'2-Pain'},{v:1,l:'1-None'}];
+const GCS_V = [{v:5,l:'5-Oriented'},{v:4,l:'4-Confused'},{v:3,l:'3-Inapp'},{v:2,l:'2-Incomp'},{v:1,l:'1-None'},{v:'T',l:'T-ใส่ท่อ (Intubated)'}];
+const GCS_M = [{v:6,l:'6-Obeys'},{v:5,l:'5-Localize'},{v:4,l:'4-Withdraw'},{v:3,l:'3-Flex'},{v:2,l:'2-Ext'},{v:1,l:'1-None'}];
+function renderGcsGroup(containerId, options, key){
+  const c = document.getElementById(containerId); c.innerHTML = '';
+  options.forEach(o=>{
+    const b = document.createElement('button');
+    const isOn = state.gcs[key] === o.v;
+    b.className = 'chip' + (isOn ? ' on' : ''); b.style.background = isOn ? 'var(--ecg)' : ''; b.textContent = o.l;
+    b.onclick = ()=>{ state.gcs[key] = isOn ? null : o.v; renderGcsGroup(containerId, options, key); computeAll(); };
+    c.appendChild(b);
+  });
+}
+renderGcsGroup('gcsE', GCS_E, 'E'); renderGcsGroup('gcsV', GCS_V, 'V'); renderGcsGroup('gcsM', GCS_M, 'M');
+
+/* ---- SOS Score choice groups ---- */
+function renderSosChoice(containerId, options, stateKey){
+  const c = document.getElementById(containerId); c.innerHTML = '';
+  options.forEach(opt=>{
+    const isOn = state.sos[stateKey] && state.sos[stateKey].label === opt.label;
+    const b = document.createElement('button');
+    b.className = 'chip chip-wide' + (isOn ? ' on' : '');
+    b.style.background = isOn ? 'var(--spo2)' : '';
+    b.innerHTML = `<span>${opt.label}</span><span class="pts-tag">${opt.sub||''} · ${opt.pts} pts</span>`;
+    b.onclick = ()=>{ state.sos[stateKey] = isOn ? null : opt; renderSosChoice(containerId, options, stateKey); computeAll(); };
+    c.appendChild(b);
+  });
+}
+renderSosChoice('sosTempGrid', SOS_TEMP, 'temp');
+renderSosChoice('sosBpGrid', SOS_BP, 'bp');
+renderSosChoice('sosPulseGrid', SOS_PULSE, 'pulse');
+renderSosChoice('sosRespGrid', SOS_RESP, 'resp');
+renderSosChoice('sosConsciousGrid', SOS_CONSCIOUS, 'conscious');
+
+const urineIntervalGrid = document.getElementById('urineIntervalGrid');
+URINE_INTERVALS.forEach(iv=>{
+  const b = document.createElement('button');
+  const isOn = state.sos.urineInterval === iv.id;
+  b.className = 'chip chip-sm' + (isOn?' on':''); b.style.background = isOn?'var(--amber)':''; b.textContent = iv.label;
+  b.onclick = ()=>{ state.sos.urineInterval = iv.id; state.sos.urine = null; renderUrineIntervalGrid(); renderSosChoice('sosUrineGrid', SOS_URINE[iv.id], 'urine'); computeAll(); };
+  urineIntervalGrid.appendChild(b);
+});
+function renderUrineIntervalGrid(){
+  document.querySelectorAll('#urineIntervalGrid .chip').forEach((b,idx)=>{
+    const isOn = URINE_INTERVALS[idx].id === state.sos.urineInterval;
+    b.classList.toggle('on', isOn); b.style.background = isOn?'var(--amber)':'';
+  });
+}
+renderSosChoice('sosUrineGrid', SOS_URINE[state.sos.urineInterval], 'urine');
+
+function buildGcsStrings(){
+  const {E,V,M} = state.gcs;
+  const breakdown = `E${E!==null?E:'-'}V${V!==null?V:'-'}M${M!==null?M:'-'}`;
+  let total = '-';
+  if(E!==null && M!==null){
+    if(V==='T') total = (E+M)+'T';
+    else if(V!==null) total = String(E+V+M);
+  }
+  return { breakdown, total };
+}
+function computeAll(){
+  const gcsStr = buildGcsStrings();
+  document.getElementById('gcsTotal').textContent = gcsStr.total;
+  document.getElementById('gcsBreakdownLabel').textContent = '('+gcsStr.breakdown+')';
+
+  const rows = [
+    {label:'Temperature', item: state.sos.temp},
+    {label:'Systolic BP', item: state.sos.bp},
+    {label:'Pulse', item: state.sos.pulse},
+    {label:'Respiration', item: state.sos.resp},
+    {label:'Consciousness', item: state.sos.conscious}
+  ];
+  const box = document.getElementById('sosBreakdown'); box.innerHTML = '';
+  let total = 0, requiredFilled = true;
+  rows.forEach(r=>{
+    if(!r.item) requiredFilled = false;
+    const row = document.createElement('div'); row.className = 'sos-row';
+    row.innerHTML = `<span class="text-slate-300">${r.label} <span style="color:var(--faint);">${r.item?('('+r.item.label+')'):''}</span></span><span class="pts" style="color:var(--spo2);">${r.item?r.item.pts+' pts':'-'}</span>`;
+    box.appendChild(row);
+    total += r.item ? r.item.pts : 0;
+  });
+  const urineRow = document.createElement('div'); urineRow.className = 'sos-row';
+  urineRow.innerHTML = `<span class="text-slate-300">Urine Output <span style="color:var(--faint);">${state.sos.urine?('('+state.sos.urine.label+' '+(state.sos.urine.sub||'')+')'):'(ไม่รวม)'}</span></span><span class="pts" style="color:var(--spo2);">${state.sos.urine?state.sos.urine.pts+' pts':'-'}</span>`;
+  box.appendChild(urineRow);
+  if(state.sos.urine) total += state.sos.urine.pts;
+
+  const totalDisplay = document.getElementById('sosTotalDisplay');
+  const sosNum = document.getElementById('sosNum');
+  const riskLabel = document.getElementById('sosRiskLabel');
+  const riskLabelHeader = document.getElementById('sosRiskLabelHeader');
+  const gauge = document.getElementById('sosGauge');
+  const actionP = document.getElementById('sosAction');
+  const maxScore = 18;
+  const pct = Math.min(total / maxScore, 1);
+
+  if(!requiredFilled){
+    totalDisplay.textContent = `${total} (ยังไม่ครบ)`;
+    sosNum.textContent = total;
+    riskLabel.textContent = 'รอข้อมูลครบ'; riskLabel.style.background='var(--chip)'; riskLabel.style.color='var(--muted)';
+    riskLabelHeader.textContent = 'รอข้อมูล'; riskLabelHeader.style.color='var(--muted)';
+    gauge.style.setProperty('--pct', pct); gauge.style.setProperty('--ring-color', '#3a4757'); gauge.style.setProperty('--glow','0px');
+    actionP.textContent = 'เลือกให้ครบ 5 ข้อ (Temp, BP, Pulse, Resp, Consciousness) เพื่อคำนวณ — Urine Output เลือกเพิ่มได้ถ้ามีข้อมูล';
+  } else {
+    totalDisplay.textContent = total; sosNum.textContent = total;
+    let risk, bg, fg, ring, glow, action;
+    if(total >= 4){ risk='ภาวะวิกฤต (Critical)'; bg='rgba(255,90,114,.15)'; fg='var(--crit)'; ring='var(--crit)'; glow='10px';
+      action = '⚠ Monitor ทุก 15-30 นาทีจน SOS <4, Record V/S & I/O ทุก 15-30 นาที, รายงานแพทย์ทันที, พิจารณาย้าย ICU/ER, ค้นหาสาเหตุ (Severe Sepsis/Septic Shock, Acute MI, PE ฯลฯ)'; }
+    else if(total >= 1){ risk='เฝ้าระวัง (Monitor)'; bg='rgba(242,185,74,.15)'; fg='var(--amber)'; ring='var(--amber)'; glow='6px';
+      action = 'Record V/S, I/O ทุก 2-4 ชม., ประเมิน SOS Score ซ้ำทุก 4 ชม., พยาบาลพิจารณารายงานแพทย์ตามความเหมาะสม'; }
+    else { risk='ไม่มีภาวะ Shock'; bg='rgba(52,229,140,.15)'; fg='var(--ecg)'; ring='var(--ecg)'; glow='4px';
+      action = 'Record V/S ตามปกติทุก 4 ชม., ประเมิน SOS Score ตามปกติ'; }
+    riskLabel.textContent = risk; riskLabel.style.background=bg; riskLabel.style.color=fg;
+    riskLabelHeader.textContent = risk; riskLabelHeader.style.color=fg;
+    gauge.style.setProperty('--pct', pct); gauge.style.setProperty('--ring-color', ring); gauge.style.setProperty('--glow', glow);
+    sosNum.style.color = fg;
+    actionP.textContent = action;
+  }
+  updateSlip();
+}
+computeAll();
+
+/* Diagnosis */
+const dxQuick = document.getElementById('dxQuick');
+DX_QUICK.forEach(d=>{
+  const b = document.createElement('button'); b.className = 'chip'; b.textContent = d;
+  b.onclick = ()=>{ const i = state.dx.indexOf(d); if(i>-1) state.dx.splice(i,1); else state.dx.push(d); b.classList.toggle('on', state.dx.includes(d)); b.style.background = state.dx.includes(d)?'var(--violet)':''; updateSlip(); };
+  dxQuick.appendChild(b);
+});
+function addCustomDx(){
+  const val = document.getElementById('dxCustomInput').value.trim(); if(!val) return;
+  state.dxCustom.push(val); document.getElementById('dxCustomInput').value=''; renderCustomDxList(); updateSlip();
+}
+function renderCustomDxList(){
+  const c = document.getElementById('dxCustomList'); c.innerHTML='';
+  state.dxCustom.forEach((d,idx)=>{
+    const chip = document.createElement('span'); chip.className='chip on'; chip.style.background='var(--violet)'; chip.textContent=d+' ✕';
+    chip.onclick = ()=>{ state.dxCustom.splice(idx,1); renderCustomDxList(); updateSlip(); };
+    c.appendChild(chip);
+  });
+}
+
+/* Drugs (categorized) */
+function renderDrugQuick(containerId, list, color){
+  const c = document.getElementById(containerId);
+  list.forEach(d=>{
+    const b = document.createElement('button'); b.className='chip chip-sm'; b.textContent=d; b.style.borderColor=color;
+    b.onclick = ()=>{
+      document.querySelectorAll('#drugVasoQuick .chip, #drugAtbQuick .chip, #drugOtherQuick .chip').forEach(x=>{ x.classList.remove('on'); x.style.background=''; });
+      b.classList.add('on'); b.style.background=color;
+      document.getElementById('drugName').value = d;
+      const concInput = document.getElementById('drugConc');
+      concInput.scrollIntoView({behavior:'smooth', block:'center'});
+      concInput.focus();
+    };
+    c.appendChild(b);
+  });
+}
+renderDrugQuick('drugVasoQuick', DRUG_VASO, 'var(--crit)');
+renderDrugQuick('drugAtbQuick', DRUG_ATB, 'var(--amber)');
+renderDrugQuick('drugOtherQuick', DRUG_OTHER, 'var(--spo2)');
+const rateQuick = document.getElementById('rateQuick');
+RATE_QUICK.forEach(r=>{
+  const b = document.createElement('button'); b.className='chip chip-sm'; b.textContent=r;
+  b.onclick = ()=>{ document.getElementById('drugRate').value = r; };
+  rateQuick.appendChild(b);
+});
+const concQuick = document.getElementById('concQuick');
+CONC_QUICK.forEach(cq=>{
+  const b = document.createElement('button'); b.className='chip chip-sm'; b.textContent=cq;
+  b.onclick = ()=>{ document.getElementById('drugConc').value = cq; };
+  concQuick.appendChild(b);
+});
+function addDrug(){
+  const name = document.getElementById('drugName').value.trim();
+  const conc = document.getElementById('drugConc').value.trim();
+  const rate = document.getElementById('drugRate').value.trim();
+  if(!name) return;
+  state.drugs.push({name, conc, rate});
+  document.getElementById('drugName').value=''; document.getElementById('drugConc').value=''; document.getElementById('drugRate').value='';
+  document.querySelectorAll('#drugVasoQuick .chip, #drugAtbQuick .chip, #drugOtherQuick .chip').forEach(x=>{ x.classList.remove('on'); x.style.background=''; });
+  renderDrugList(); updateSlip();
+}
+function renderDrugList(){
+  const c = document.getElementById('drugList'); c.innerHTML='';
+  state.drugs.forEach((d,idx)=>{
+    const row = document.createElement('div'); row.className='flex justify-between items-center p-2 rounded-lg text-sm'; row.style.background='var(--panel2)'; row.style.border='1px solid var(--line)';
+    row.innerHTML=`<span class="text-slate-200"><b>${d.name}</b> ${d.conc? '• Conc: '+d.conc:''} ${d.rate? '• Rate: '+d.rate:''}</span>`;
+    const rm = document.createElement('button'); rm.textContent='✕'; rm.className='font-bold'; rm.style.color='var(--crit)';
+    rm.onclick = ()=>{ state.drugs.splice(idx,1); renderDrugList(); updateSlip(); };
+    row.appendChild(rm); c.appendChild(row);
+  });
+}
+
+/* Ventilator (choice-based, conditional sub-params) */
+function renderVentGroup(containerId, items, key){
+  const c = document.getElementById(containerId); c.innerHTML = '';
+  items.forEach(item=>{
+    const isOn = state.vent[key] === item;
+    const b = document.createElement('button'); b.className = 'chip chip-sm' + (isOn ? ' on' : ''); b.style.background = isOn ? 'var(--spo2)' : ''; b.textContent = item;
+    b.onclick = ()=>{ state.vent[key] = isOn ? '' : item; renderVentGroup(containerId, items, key); updateVentVisibility(); updateSlip(); };
+    c.appendChild(b);
+  });
+}
+function renderVentMainGroup(containerId, items){
+  const c = document.getElementById(containerId); c.innerHTML = '';
+  items.forEach(item=>{
+    const isOn = state.vent.mode === item;
+    const b = document.createElement('button'); b.className = 'chip chip-sm' + (isOn ? ' on' : ''); b.style.background = isOn ? 'var(--spo2)' : ''; b.textContent = item;
+    b.onclick = ()=>{
+      state.vent.mode = isOn ? '' : item;
+      if(!VENT_MAIN_SPLIT.includes(state.vent.mode)) state.vent.subMode = '';
+      renderAllVentMainGroups();
+      renderVentSubModeGrid();
+      updateVentVisibility();
+      updateSlip();
+    };
+    c.appendChild(b);
+  });
+}
+function renderAllVentMainGroups(){
+  renderVentMainGroup('ventMainSplitGrid', VENT_MAIN_SPLIT);
+  renderVentMainGroup('ventMainOtherGrid', VENT_MAIN_OTHER);
+  renderVentMainGroup('ventO2Grid', VENT_O2_DEVICES);
+}
+function renderVentSubModeGrid(){
+  const c = document.getElementById('ventSubModeGrid'); c.innerHTML = '';
+  VENT_SUBMODES.forEach(item=>{
+    const isOn = state.vent.subMode === item;
+    const b = document.createElement('button'); b.className = 'chip chip-sm' + (isOn ? ' on' : ''); b.style.background = isOn ? 'var(--crit)' : ''; b.textContent = item;
+    b.onclick = ()=>{ state.vent.subMode = isOn ? '' : item; renderVentSubModeGrid(); updateSlip(); };
+    c.appendChild(b);
+  });
+}
+function updateVentVisibility(){
+  const mode = state.vent.mode;
+  const needsSubMode = VENT_MAIN_SPLIT.includes(mode);
+  document.getElementById('ventSubModeWrap').classList.toggle('hidden', !needsSubMode);
+  const needsPeepPs = VENT_MAIN_SPLIT.includes(mode) || VENT_MAIN_OTHER.includes(mode);
+  document.getElementById('ventSubParams').classList.toggle('hidden', !needsPeepPs);
+  document.getElementById('ventNoneNote').classList.toggle('hidden', needsPeepPs);
+  const needsFio2 = mode !== '' && !VENT_ROOMAIR.includes(mode) && mode !== VENT_OTHER_CUSTOM;
+  document.getElementById('ventFio2Wrap').classList.toggle('hidden', !needsFio2);
+  document.getElementById('ventModeCustom').classList.toggle('hidden', mode !== VENT_OTHER_CUSTOM);
+}
+renderAllVentMainGroups();
+renderVentSubModeGrid();
+renderVentGroup('ventFio2Grid', FIO2_OPTS, 'fio2');
+renderVentGroup('ventPeepGrid', PEEP_OPTS, 'peep');
+renderVentGroup('ventPsGrid', PS_OPTS, 'ps');
+updateVentVisibility();
+function effectivePeep(){ return (state.vent.peepCustom||'').trim() || state.vent.peep; }
+function effectivePs(){ return (state.vent.psCustom||'').trim() || state.vent.ps; }
+
+/* Lines & Tubes */
+const linesGrid = document.getElementById('linesGrid');
+LINES_DEF.forEach(l=>{
+  const b = document.createElement('button'); b.className='chip'; b.textContent=l.name;
+  b.onclick = ()=>{
+    if(!state.lines[l.id]) { state.lines[l.id] = { days:'', amount:'', color:'', note:'' }; } else { delete state.lines[l.id]; }
+    b.classList.toggle('on', !!state.lines[l.id]); b.style.background = state.lines[l.id]?'var(--spo2)':'';
+    renderLinesDetail(); updateSlip();
+  };
+  linesGrid.appendChild(b);
+});
+function miniChoice(items, current, onPick){
+  const wrap = document.createElement('div'); wrap.className='flex flex-wrap gap-1';
+  items.forEach(item=>{
+    const isOn = current === item;
+    const b = document.createElement('button'); b.type='x';
+    b.className='chip chip-sm'+(isOn?' on':''); b.style.background = isOn ? 'var(--spo2)' : ''; b.textContent = item;
+    b.onclick = onPick.bind(null, isOn ? '' : item);
+    wrap.appendChild(b);
+  });
+  return wrap;
+}
+function renderLinesDetail(){
+  const c = document.getElementById('linesDetailArea'); c.innerHTML='';
+  Object.keys(state.lines).forEach(id=>{
+    const def = LINES_DEF.find(x=>x.id===id); const ld = state.lines[id];
+    const wrap = document.createElement('div'); wrap.className='p-3 rounded-xl space-y-2'; wrap.style.background='var(--panel2)'; wrap.style.border='1px solid var(--line)';
+    const title = document.createElement('div'); title.className='font-semibold text-xs text-slate-200'; title.textContent='📌 '+def.name; wrap.appendChild(title);
+    const daysLabel = document.createElement('div'); daysLabel.className='subgroup-label'; daysLabel.textContent='ระยะเวลาที่ใส่'; wrap.appendChild(daysLabel);
+    wrap.appendChild(miniChoice(DAYS_OPTS, ld.days, (val)=>{ ld.days = val; renderLinesDetail(); updateSlip(); }));
+    if(def.hasSecretion){
+      const amtLabel = document.createElement('div'); amtLabel.className='subgroup-label'; amtLabel.textContent='ปริมาณ Secretion'; wrap.appendChild(amtLabel);
+      wrap.appendChild(miniChoice(AMOUNT_OPTS, ld.amount, (val)=>{ ld.amount = val; renderLinesDetail(); updateSlip(); }));
+      const colorLabel = document.createElement('div'); colorLabel.className='subgroup-label'; colorLabel.textContent='สี / ลักษณะ'; wrap.appendChild(colorLabel);
+      wrap.appendChild(miniChoice(COLOR_OPTS, ld.color, (val)=>{ ld.color = val; renderLinesDetail(); updateSlip(); }));
+    }
+    const noteInput = document.createElement('input'); noteInput.className='field-input text-xs'; noteInput.placeholder='หมายเหตุเพิ่มเติมของสายนี้ (พิมพ์เพิ่มได้เสมอ)'; noteInput.value = ld.note || '';
+    noteInput.oninput = ()=>{ ld.note = noteInput.value; updateSlip(); };
+    wrap.appendChild(noteInput);
+    c.appendChild(wrap);
+  });
+}
+
+/* Intake / Output Net Balance */
+function updateNetBalance(){
+  const inV = parseFloat(state.io.intake), outV = parseFloat(state.io.output);
+  const disp = document.getElementById('netBalanceDisplay');
+  if(!isNaN(inV) && !isNaN(outV)){
+    const net = inV - outV;
+    disp.textContent = (net>=0?'+':'')+net+' ml';
+    disp.style.color = net>=0 ? 'var(--ecg)' : 'var(--crit)';
+  } else { disp.textContent='-'; disp.style.color='var(--spo2)'; }
+  updateSlip();
+}
+
+/* DTX Monitoring */
+const dtxIntervalGrid = document.getElementById('dtxIntervalGrid');
+DTX_INTERVALS.forEach(iv=>{
+  const b = document.createElement('button'); const isOn = state.dtx.interval===iv;
+  b.className='chip chip-sm'+(isOn?' on':''); b.style.background=isOn?'var(--amber)':''; b.textContent=iv;
+  b.onclick = ()=>{ state.dtx.interval = (state.dtx.interval===iv) ? '' : iv; renderDtxIntervalGrid(); updateSlip(); };
+  dtxIntervalGrid.appendChild(b);
+});
+function renderDtxIntervalGrid(){
+  document.querySelectorAll('#dtxIntervalGrid .chip').forEach((b,idx)=>{
+    const isOn = DTX_INTERVALS[idx]===state.dtx.interval;
+    b.classList.toggle('on', isOn); b.style.background = isOn?'var(--amber)':'';
+  });
+}
+function addDtxReading(){
+  const time = document.getElementById('dtxTime').value.trim();
+  const val = document.getElementById('dtxValue').value.trim();
+  if(!val) return;
+  state.dtx.readings.push({time, val});
+  document.getElementById('dtxTime').value=''; document.getElementById('dtxValue').value='';
+  renderDtxReadings(); updateSlip();
+}
+function renderDtxReadings(){
+  const c = document.getElementById('dtxList'); c.innerHTML='';
+  state.dtx.readings.forEach((r,idx)=>{
+    const row = document.createElement('div'); row.className='flex justify-between items-center p-2 rounded-lg text-sm'; row.style.background='var(--panel2)'; row.style.border='1px solid var(--line)';
+    row.innerHTML=`<span class="text-slate-200">${r.time?('<b>'+r.time+'</b> — '):''}${r.val} mg/dL</span>`;
+    const rm = document.createElement('button'); rm.textContent='✕'; rm.className='font-bold'; rm.style.color='var(--crit)';
+    rm.onclick = ()=>{ state.dtx.readings.splice(idx,1); renderDtxReadings(); updateSlip(); };
+    row.appendChild(rm); c.appendChild(row);
+  });
+}
+
+/* Labs — grouped & color-coded */
+const labsGroupsContainer = document.getElementById('labsGroupsContainer');
+LABS_GROUPS.forEach(group=>{
+  const wrap = document.createElement('div');
+  const header = document.createElement('span'); header.className='drug-cat-header';
+  header.style.background = group.bg; header.style.color = group.color; header.textContent = group.title;
+  wrap.appendChild(header);
+  const grid = document.createElement('div'); grid.className='grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2';
+  group.items.forEach(l=>{
+    const cell = document.createElement('div'); cell.innerHTML=`<div class="field-label">${l.label}</div>`;
+    const inp = document.createElement('input'); inp.className='field-input'; inp.placeholder='ค่าปกติ '+l.ph;
+    inp.oninput = ()=>{ state.labs[l.key] = inp.value; updateSlip(); };
+    cell.appendChild(inp); grid.appendChild(cell);
+  });
+  wrap.appendChild(grid);
+  labsGroupsContainer.appendChild(wrap);
+});
+
+/* Follow-up / Pending Tasks */
+renderOptions('followupGrid', FOLLOWUP_QUICK, 'followup', true, 'followupCustom', 'followupCustomText', 'อื่นๆ (ระบุ)');
+
+/* Theme toggle */
+function toggleTheme(){
+  const html = document.documentElement;
+  const isLight = html.getAttribute('data-theme') === 'light';
+  html.setAttribute('data-theme', isLight ? 'dark' : 'light');
+  document.getElementById('themeToggle').textContent = isLight ? 'Mode 🌙' : 'Mode 🌤️';
+}
+
+/* Search Filter */
+function filterKeywords(query){
+  const q = query.toLowerCase();
+  document.querySelectorAll('.card').forEach(card=>{
+    const text = card.textContent.toLowerCase();
+    card.style.display = text.includes(q) || !q ? 'block' : 'none';
+  });
+}
+
+/* Slip Text Generation */
+function buildSlipText(hideName){
+  const W = 32; const L = [];
+  L.push('=== ICU SMART HANDOVER (SBAR) ===');
+  L.push('• เตียง: '+(state.bed||'-')+' | เวร: '+(state.shift||'-'));
+  const pnameVal = hideName ? '████ (ซ่อนชื่อ)' : (document.getElementById('pname').value||'-');
+  L.push('• ชื่อ: '+pnameVal);
+  L.push('• HN: '+(document.getElementById('hn').value||'-')+' | Admit: '+(state.admitDate||'-'));
+  L.push('• ผู้บันทึก: '+(state.recordedBy||'-'));
+  L.push('-'.repeat(W));
+
+  L.push('[S: Situation & Safety]');
+  const precList = [...state.precautions.filter(p=>p!=='อื่นๆ (ระบุ)'), ...(state.precautions.includes('อื่นๆ (ระบุ)') && state.precautionsCustomText ? [state.precautionsCustomText] : [])];
+  L.push('Precautions: '+(precList.join(', ')||'-'));
+  const mdrList = [...state.mdr.filter(m=>m!=='อื่นๆ (ระบุ)'), ...(state.mdr.includes('อื่นๆ (ระบุ)') && state.mdrCustomText ? [state.mdrCustomText] : [])];
+  if(mdrList.length) L.push('MDR Organism: '+mdrList.join(', '));
+  const feedingDisp = state.feeding === 'อื่นๆ (ระบุ)' ? (state.feedingCustomText||'อื่นๆ') : state.feeding;
+  L.push('Feeding/NPO: '+(feedingDisp||'-'));
+  L.push('Shift Goal: '+(document.getElementById('shiftGoal').value||'-'));
+  L.push('-'.repeat(W));
+
+  L.push('[B: Background & Drips/ATB]');
+  const allDx = [...state.dx, ...state.dxCustom];
+  L.push('Dx: '+(allDx.join(', ')||'-'));
+  if(state.drugs.length){ state.drugs.forEach(d=>L.push(`- ${d.name} (${d.conc||''}, Rate: ${d.rate||''})`)); } else { L.push('- ไม่มีดริปยาพิเศษ'); }
+  L.push('-'.repeat(W));
+
+  L.push('[A: Assessment — GCS & SOS Score]');
+  const gcsStr = buildGcsStrings();
+  L.push(`GCS: ${gcsStr.breakdown} (Total: ${gcsStr.total})`);
+  L.push(`SOS: T[${state.sos.temp?state.sos.temp.label:'-'}] BP[${state.sos.bp?state.sos.bp.label:'-'}] P[${state.sos.pulse?state.sos.pulse.label:'-'}] R[${state.sos.resp?state.sos.resp.label:'-'}]`);
+  L.push(`     Conscious[${state.sos.conscious?state.sos.conscious.label:'-'}] Urine[${state.sos.urine?state.sos.urine.label+' '+state.sos.urineInterval:'ไม่รวม'}]`);
+  L.push(`SOS Score รวม: ${document.getElementById('sosTotalDisplay').textContent} — ${document.getElementById('sosRiskLabel').textContent}`);
+  if(document.getElementById('assessNote').value) L.push('Note: '+document.getElementById('assessNote').value);
+  L.push('-'.repeat(W));
+
+  L.push('[R: Recommendation & Plan]');
+  const ventParts = [];
+  const modeLabel = state.vent.mode === VENT_OTHER_CUSTOM ? (state.vent.mainModeCustomText||'อื่นๆ') : state.vent.mode;
+  if(modeLabel) ventParts.push('Mode '+modeLabel+(state.vent.subMode ? ' / '+state.vent.subMode : ''));
+  if(state.vent.mode !== '' && !VENT_ROOMAIR.includes(state.vent.mode) && state.vent.mode !== VENT_OTHER_CUSTOM){
+    if(state.vent.fio2) ventParts.push('FiO2 '+state.vent.fio2);
+  }
+  if(VENT_MAIN_SPLIT.includes(state.vent.mode) || VENT_MAIN_OTHER.includes(state.vent.mode)){
+    const peepV = effectivePeep(); if(peepV) ventParts.push('PEEP '+peepV);
+    const psV = effectivePs(); if(psV) ventParts.push('PS '+psV);
+  }
+  const ventExtra = document.getElementById('ventExtra').value;
+  if(ventExtra) ventParts.push(ventExtra);
+  L.push('Ventilator: '+(ventParts.join(', ')||'-'));
+
+  const inV = state.io.intake || '-', outV = state.io.output || '-';
+  L.push(`I/O 8hr: Intake ${inV} ml / Output ${outV} ml (Net: ${document.getElementById('netBalanceDisplay').textContent})`);
+
+  if(state.dtx.interval || state.dtx.readings.length){
+    let dtxLine = 'DTX'+(state.dtx.interval?(' ('+state.dtx.interval+')'):'')+': ';
+    dtxLine += state.dtx.readings.length ? state.dtx.readings.map(r=>(r.time?r.time+'=':'')+r.val).join(', ')+' mg/dL' : '-';
+    L.push(dtxLine);
+  }
+
+  const labVals = [];
+  LABS_GROUPS.forEach(group=>{
+    const parts = group.items.filter(l=>state.labs[l.key]).map(l=>l.key+' '+state.labs[l.key]);
+    if(parts.length) labVals.push(`${group.title}: ${parts.join(', ')}`);
+  });
+  if(labVals.length){ L.push('Labs:'); labVals.forEach(v=>L.push(' * '+v)); }
+  L.push('Blood Bank/Other: '+(document.getElementById('bloodBankInfo').value||'-'));
+
+  if(Object.keys(state.lines).length){
+    L.push('Lines/Tubes:');
+    Object.keys(state.lines).forEach(id=>{
+      const def = LINES_DEF.find(x=>x.id===id); const ld = state.lines[id]; const parts = [];
+      if(ld.days) parts.push('ใส่ '+ld.days);
+      if(ld.amount) parts.push('Secretion: '+ld.amount);
+      if(ld.color) parts.push(ld.color);
+      if(ld.note) parts.push(ld.note);
+      L.push(` * ${def.name} [${parts.join(' | ')||'ยังไม่ระบุรายละเอียด'}]`);
+    });
+  }
+
+  const followList = [...state.followup.filter(f=>f!=='อื่นๆ (ระบุ)'), ...(state.followup.includes('อื่นๆ (ระบุ)') && state.followupCustomText ? [state.followupCustomText] : [])];
+  const freeNoteVal = document.getElementById('freeNote').value;
+  if(followList.length || freeNoteVal){
+    L.push('-'.repeat(W));
+    L.push('[Pending Tasks / Notes]');
+    if(followList.length) L.push('- '+followList.join(', '));
+    if(freeNoteVal) L.push('- '+freeNoteVal);
+  }
+
+  return L.join('\n');
+}
+function updateSlip(){ document.getElementById('slip').textContent = buildSlipText(); document.getElementById('labelSlip').textContent = buildLabelText(); }
+function onRecordedByChange(){ state.recordedBy = document.getElementById('recordedBy').value.trim(); updateSlip(); }
+
+function buildLabelText(){
+  const W = state.printWidth === '58' ? 24 : 32;
+  const L = [];
+  L.push('*'.repeat(W));
+  L.push((document.getElementById('pname').value||'- ไม่ระบุชื่อ -'));
+  L.push('HN: '+(document.getElementById('hn').value||'-')+'   เตียง '+(state.bed||'-'));
+  const allDx = [...state.dx, ...state.dxCustom];
+  if(allDx.length) L.push('Dx: '+allDx.join(', '));
+  L.push('Admit: '+(state.admitDate||'-')+'  Day '+(document.getElementById('calculatedStay').textContent.match(/Day\s*(\d+)/)?.[1] || '-'));
+  L.push('เวร: '+(state.shift||'-')+'  ผู้บันทึก: '+(state.recordedBy||'-'));
+  const now = new Date();
+  L.push('พิมพ์: '+now.toLocaleDateString('th-TH')+' '+now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}));
+  L.push('*'.repeat(W));
+  return L.join('\n');
+}
+
+function applyPrintStyle(widthMM, areaId){
+  const css = `@media print{
+    #${areaId}, #${areaId} *{ visibility:visible; }
+    #${areaId}{ position:absolute; top:0; left:0; width:${widthMM}mm; padding:2mm; background:#fff; }
+    @page{ size:${widthMM}mm auto; margin:0; }
+  }`;
+  document.getElementById('dynamicPrintStyle').textContent = css;
+}
+function printSlip(){ applyPrintStyle(state.printWidth, 'printArea'); setTimeout(()=>window.print(), 50); }
+function printLabel(){ applyPrintStyle(state.printWidth, 'labelPrintArea'); setTimeout(()=>window.print(), 50); }
+function renderPrintWidthGrid(){
+  const c = document.getElementById('printWidthGrid'); c.innerHTML = '';
+  [['58','58 มม. (สติกเกอร์/ซองยา)'],['80','80 มม. (สลิปมาตรฐาน)']].forEach(([val,label])=>{
+    const isOn = state.printWidth === val;
+    const b = document.createElement('button'); b.className = 'chip chip-flat' + (isOn?' on':''); b.style.background = isOn ? 'var(--spo2)' : ''; b.textContent = label;
+    b.onclick = ()=>{ state.printWidth = val; renderPrintWidthGrid();
+      document.getElementById('printSlipBtn').textContent = '🖨️ พิมพ์สลิป SBAR ('+val+'mm)';
+      document.getElementById('printLabelBtn').textContent = '🏷️ พิมพ์สติกเกอร์ซองยา ('+val+'mm)';
+    };
+    c.appendChild(b);
+  });
+}
+renderPrintWidthGrid();
+document.getElementById('printSlipBtn').textContent = '🖨️ พิมพ์สลิป SBAR (80mm)';
+document.getElementById('printLabelBtn').textContent = '🏷️ พิมพ์สติกเกอร์ซองยา (80mm)';
+async function copySlip(){
+  await navigator.clipboard.writeText(buildSlipText());
+  const t = document.getElementById('copyToast'); t.classList.remove('hidden');
+  setTimeout(()=>t.classList.add('hidden'), 2000);
+}
+function shareLine(){
+  const text = buildSlipText(true);
+  const url = 'https://line.me/R/msg/text/?' + encodeURIComponent(text);
+  window.open(url, '_blank');
+}
+updateSlip();
+</script>
+<script>
+/* PWA: register service worker */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(err => console.log('SW registration failed:', err));
+  });
+}
+</script>
+</body>
+</html>

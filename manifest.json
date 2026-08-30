@@ -1,5 +1,5 @@
 {
-  "name": "ICU Smart Handover & SBAR Pro",
+  "name": "ICU Handover",
   "short_name": "ICU Handover",
   "description": "แอปช่วยจดและส่งต่อข้อมูล SBAR สำหรับเวร ICU",
   "start_url": "./index.html",

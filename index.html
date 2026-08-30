@@ -7,7 +7,6 @@
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
 <title>ICU Smart Handover & SBAR System Pro</title>
-<link rel="manifest" href="manifest.json" />
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=Sarabun:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
@@ -17,6 +16,9 @@
     --ink:#E8F0F4; --muted:#7E92A1; --faint:#4B5C6B;
     --ecg:#34E58C; --spo2:#33C7F0; --amber:#F2B94A; --crit:#FF5A72; --violet:#B98BF5;
     --chip:#1A2430;
+    --sidebar-bg:#24282D; --sidebar-line:#35393F; --sidebar-fg:#F1F3F5; --sidebar-fg-muted:#9BA1A8;
+    --header-grad-1:#0D131A; --header-grad-2:#0A0E13;
+    --bodyfill:#2A3A48; --bodyfill-line:#425569;
   }
   html[data-theme="light"]{
     --bg:#F2FAF7; --panel:#FFFFFF; --panel2:#EAF7F2; --line:#CFEAE1;
@@ -24,20 +26,61 @@
     --chip:#E3F5EE;
     --ecg:#0E9E75; --spo2:#0EA5C4; --amber:#C77B12; --crit:#E5325A; --violet:#8B5CF6;
     --heading:#0B7D63;
+    --sidebar-bg:#E9EAEC; --sidebar-line:#D4D6D9; --sidebar-fg:#1F2328; --sidebar-fg-muted:#686E75;
+    --header-grad-1:#FFFFFF; --header-grad-2:#EAF7F2;
+    --bodyfill:#CFE9DD; --bodyfill-line:#9FCDB9;
   }
+  .app-header{ background:linear-gradient(180deg, var(--header-grad-1), var(--header-grad-2)); }
+  .app-header-title{ color:#FFFFFF; }
+  html[data-theme="light"] .app-header-title{ color:var(--heading); }
   html[data-theme="light"] #slip{ color:#12251f; }
   html[data-theme="light"] ::placeholder{ color:#A9C7BC; }
   html[data-theme="light"] .text-slate-100{ color:var(--heading); }
+  html[data-theme="light"] .text-slate-200{ color:var(--ink); }
+  html[data-theme="light"] .text-slate-300{ color:var(--ink); }
+  html[data-theme="light"] .text-slate-400{ color:var(--muted); }
   html[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator{ filter:none; opacity:.75; cursor:pointer; }
   *{ font-family:'Sarabun', sans-serif; }
   h1,h2,h3,.font-display{ font-family:'Kanit', sans-serif; }
   .mono{ font-family:'JetBrains Mono', monospace; }
+  html, body{ overflow-x:hidden; max-width:100%; touch-action:pan-y; }
   body{ background: radial-gradient(1200px 600px at 50% -10%, rgba(51,199,240,0.06), transparent), var(--bg); color:var(--ink); }
   @media screen{ html{ font-size:104%; } }
   .card{ background:var(--panel); border:1px solid var(--line); border-radius:16px;
     box-shadow:0 1px 2px rgba(0,0,0,0.3), 0 6px 20px rgba(0,0,0,0.25); border-left:3px solid var(--line); }
   .card-s{ border-left-color:var(--crit); } .card-a{ border-left-color:var(--ecg); }
   .card-b{ border-left-color:var(--violet); } .card-r{ border-left-color:var(--spo2); }
+  [data-section]{ transition:opacity .25s ease, filter .25s ease; }
+  .dimmed-section{ opacity:.32; filter:saturate(.55); pointer-events:none; }
+
+  /* Sidebar — locked in place (position:fixed, no horizontal drift), neutral gray, high-contrast icons */
+  body{ padding-left:56px; }
+  .app-sidebar{ position:fixed; top:0; left:0; height:100vh; width:56px; z-index:40;
+    background:var(--sidebar-bg); border-right:1px solid var(--sidebar-line); display:flex; flex-direction:column; align-items:stretch;
+    padding:10px 0; transition:width .22s ease; overflow:hidden; touch-action:pan-y; }
+  .app-sidebar.expanded{ width:208px; box-shadow:4px 0 18px rgba(0,0,0,.25); }
+  .sidebar-toggle{ width:36px; height:36px; margin:0 10px 10px; border-radius:9px; border:1px solid var(--sidebar-line);
+    background:transparent; color:var(--sidebar-fg); cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .sidebar-items{ display:flex; flex-direction:column; gap:3px; overflow-y:auto; overflow-x:hidden; flex:1; }
+  .sidebar-item{ display:flex; align-items:center; gap:10px; padding:9px 10px; margin:0 6px; border-radius:10px;
+    border:none; background:transparent; color:var(--sidebar-fg-muted); cursor:pointer; font-size:13.5px; font-weight:600; white-space:nowrap; text-align:left; }
+  .sidebar-item:hover{ background:var(--sidebar-line); color:var(--sidebar-fg); }
+  .sidebar-item.active{ background:var(--spo2); color:#05141B; }
+  .sidebar-item.active .sidebar-badge{ background:rgba(5,20,27,.18); color:#05141B; border-color:transparent; }
+  .sidebar-icon{ width:26px; height:26px; flex-shrink:0; display:flex; align-items:center; justify-content:center; color:var(--sidebar-fg); }
+  .sidebar-icon svg{ width:19px; height:19px; }
+  .sidebar-badge{ width:26px; height:26px; border-radius:7px; font-size:12.5px; font-weight:800; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; }
+  .sidebar-label{ opacity:0; width:0; overflow:hidden; transition:opacity .18s ease; }
+  .app-sidebar.expanded .sidebar-label{ opacity:1; width:auto; }
+  .sidebar-clear{ border-top:1px solid var(--sidebar-line); margin-top:8px; padding-top:12px; color:var(--crit); }
+  .sidebar-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:35; }
+  @media (min-width:1024px){
+    body{ padding-left:64px; }
+    .app-sidebar{ width:64px; }
+    .app-sidebar.expanded{ width:224px; box-shadow:4px 0 18px rgba(0,0,0,.25); }
+    .sidebar-backdrop{ display:none !important; }
+  }
   .chip{ padding:8px 14px; border-radius:9999px; font-size:14.5px; font-weight:500; border:1px solid var(--line);
     background:var(--chip); color:var(--ink); cursor:pointer; transition:.12s; user-select:none; display:inline-flex; align-items:center; gap:4px; }
   .chip:active{ transform:scale(0.96); }
@@ -69,9 +112,30 @@
   .badge-r{ background:rgba(51,199,240,.15); color:var(--spo2); border:1px solid rgba(51,199,240,.35); }
   ::placeholder{ color:var(--faint); }
   #slip{ font-family:'JetBrains Mono', monospace; white-space:pre-wrap; font-size:12px; line-height:1.6; color:#1a1a1a; }
+  #labelSlip{ font-family:'JetBrains Mono', monospace; white-space:pre-wrap; font-size:12px; line-height:1.6; color:#1a1a1a; }
   .subgroup-label{ font-size:11px; font-weight:600; color:var(--faint); margin:8px 0 4px; text-transform:uppercase; letter-spacing:.04em; }
   .sos-row{ display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px dashed var(--line); font-size:12.5px; }
   .sos-row:last-child{ border-bottom:none; }
+  .basket-cat{ width:100%; background:var(--panel2); border:1px solid var(--line); border-radius:12px;
+    padding:12px 15px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:.15s; text-align:left; }
+  .basket-cat.expanded{ border-color:var(--spo2); background:rgba(51,199,240,.08); border-bottom-left-radius:0; border-bottom-right-radius:0; }
+  .basket-cat-left{ display:flex; align-items:center; gap:9px; font-weight:600; font-size:14px; color:var(--ink); }
+  .basket-cat-right{ display:flex; align-items:center; gap:8px; }
+  .task-count-badge{ background:var(--spo2); color:#fff; font-size:11px; font-weight:700; padding:2px 9px; border-radius:999px; font-family:'JetBrains Mono',monospace; }
+  .task-chevron{ transition:.2s; color:var(--faint); font-size:12px; }
+  .task-chevron.rot{ transform:rotate(180deg); }
+  .basket-panel{ border:1px solid var(--spo2); border-top:none; border-bottom-left-radius:12px; border-bottom-right-radius:12px;
+    background:var(--panel); padding:12px 14px 14px; margin-bottom:2px; }
+  .task-item-grid{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .task-item-chip{ padding:6px 12px; border-radius:8px; font-size:13px; border:1px solid var(--line); background:var(--chip); cursor:pointer; color:var(--ink); }
+  .task-item-chip.on{ background:var(--spo2); color:#fff; border-color:transparent; font-weight:600; }
+  .task-subheader{ width:100%; font-size:10.5px; font-weight:700; color:var(--faint); text-transform:uppercase; letter-spacing:.04em; margin:6px 0 -2px; }
+  .basket-summary{ background:linear-gradient(150deg, rgba(51,199,240,.08), rgba(14,158,117,.06)); border:1.5px dashed var(--spo2);
+    border-radius:14px; padding:13px 15px; }
+  .summary-tag{ display:inline-flex; align-items:center; gap:5px; background:var(--panel); border:1px solid var(--line); border-radius:999px;
+    padding:5px 5px 5px 12px; font-size:12px; font-weight:600; margin:3px; color:var(--ink); cursor:pointer; }
+  .summary-tag .x{ background:var(--panel2); color:var(--muted); border-radius:999px; width:17px; height:17px; display:inline-flex; align-items:center; justify-content:center; font-size:10px; }
+  .priority-dot{ width:12px; height:12px; border-radius:999px; border:1.5px solid rgba(0,0,0,.25); flex-shrink:0; padding:0; cursor:pointer; }
   .sos-row .pts{ font-family:'JetBrains Mono',monospace; font-weight:700; }
   .note{ font-size:11px; color:var(--faint); line-height:1.5; }
   .sos-gauge{ width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center;
@@ -80,22 +144,259 @@
   .sos-gauge-inner{ width:40px; height:40px; border-radius:50%; background:#0B0F14; display:flex; align-items:center; justify-content:center;
     font-family:'JetBrains Mono',monospace; font-weight:700; font-size:15px; }
   .drug-cat-header{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:3px 10px; border-radius:6px; display:inline-block; margin-bottom:6px; }
+  /* Drug picker (Vasopressor/ATB/Other) — compact grid of small buttons + one shared inline expand panel, no page jump */
+  .drug-chip-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(118px,1fr)); gap:6px; }
+  .drug-chip-btn{ padding:8px 10px; border-radius:9px; font-size:12.5px; font-weight:600; text-align:center;
+    border:1px solid var(--line); background:var(--chip); color:var(--ink); cursor:pointer; transition:.12s; line-height:1.25; }
+  .drug-chip-btn:active{ transform:scale(0.96); }
+  .drug-chip-btn.on{ border-color:transparent; color:#05100C; font-weight:700; }
+  .drug-dose-expand{ max-height:0; opacity:0; overflow:hidden; padding:0 14px; border:1px solid transparent;
+    border-radius:12px; background:var(--panel2); margin:0 0 0;
+    transition:max-height .32s cubic-bezier(.4,0,.2,1), opacity .24s ease, padding .32s ease, margin .32s ease; }
+  .drug-dose-expand.open{ max-height:900px; opacity:1; padding:12px 14px 14px; border-color:var(--spo2); margin-bottom:12px; }
+  .dose-expand-title{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .dose-expand-title b{ font-size:14px; }
+  .dose-expand-close{ font-size:12px; color:var(--muted); cursor:pointer; padding:2px 8px; border-radius:999px; background:var(--panel); border:1px solid var(--line); }
+  .dose-expand-group-label{ font-size:10.5px; font-weight:700; color:var(--faint); text-transform:uppercase; letter-spacing:.03em; margin:8px 0 4px; }
+  .dose-expand-group-label:first-of-type{ margin-top:0; }
+  @keyframes addDrugPulse{
+    0%,100%{ box-shadow:0 0 0 0 rgba(185,139,245,.55); transform:scale(1); }
+    50%{ box-shadow:0 0 0 9px rgba(185,139,245,0); transform:scale(1.035); }
+  }
+  .add-drug-btn.pulse{ animation: addDrugPulse 1.15s ease-in-out infinite; }
   @media print{
     body *{ visibility:hidden; }
   }
+
+  /* ================= Sidebar item 5 & 6: Preview (Body Map) + Save & Export ================= */
+  .sidebar-action-divider{ border-top:1px dashed var(--sidebar-line); margin:8px 8px 6px; }
+  .sidebar-item.sidebar-action-preview{ color:var(--spo2); }
+  .sidebar-item.sidebar-action-preview:hover{ background:rgba(51,199,240,.16); color:var(--spo2); }
+  .sidebar-item.sidebar-action-preview .sidebar-icon{ color:var(--spo2); }
+  .sidebar-item.sidebar-action-save{ color:#05100C; background:var(--ecg); font-weight:700; margin-top:5px; }
+  .sidebar-item.sidebar-action-save:hover{ background:var(--ecg); filter:brightness(1.08); }
+  .sidebar-item.sidebar-action-save .sidebar-icon{ color:#05100C; }
+
+  /* ================= Modal shell (shared: Body Map + Save&Export) ================= */
+  .app-modal-backdrop{ position:fixed; inset:0; background:rgba(4,8,12,.6); backdrop-filter:blur(2px);
+    z-index:70; display:flex; align-items:flex-end; justify-content:center; }
+  @media (min-width:640px){ .app-modal-backdrop{ align-items:center; padding:16px; } }
+  .app-modal-box{ background:var(--panel); border:1px solid var(--line); width:100%; max-width:560px; max-height:92vh;
+    overflow-y:auto; border-radius:20px 20px 0 0; box-shadow:0 -8px 30px rgba(0,0,0,.45); animation:modalSlideUp .22s ease; }
+  @media (min-width:640px){ .app-modal-box{ border-radius:20px; box-shadow:0 14px 44px rgba(0,0,0,.45); } }
+  @keyframes modalSlideUp{ from{ transform:translateY(26px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
+  .app-modal-header{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:15px 18px;
+    border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--panel); z-index:2; border-radius:20px 20px 0 0; }
+  .app-modal-title{ font-family:'Kanit',sans-serif; font-weight:600; font-size:16px; color:var(--ink); display:flex; align-items:center; gap:8px; }
+  .app-modal-close{ width:32px; height:32px; border-radius:9999px; border:1px solid var(--line); background:var(--panel2);
+    color:var(--muted); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:15px; line-height:1; }
+  .app-modal-close:hover{ background:var(--chip); color:var(--crit); }
+  .app-modal-body{ padding:16px 18px 22px; }
+
+  /* ================= Body Map modal ================= */
+  .gender-toggle-row{ display:flex; gap:8px; margin-bottom:14px; }
+  .gender-btn{ flex:1; padding:10px; border-radius:12px; border:1.5px solid var(--line); background:var(--chip);
+    color:var(--ink); font-weight:600; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
+  .gender-btn.on{ border-color:var(--spo2); background:rgba(51,199,240,.16); color:var(--spo2); }
+  .bodymap-wrap{ background:var(--panel2); border:1px solid var(--line); border-radius:16px; padding:8px; margin-bottom:12px; }
+  #bodyMapSvg{ width:100%; height:auto; display:block; max-height:440px; margin:0 auto; }
+  .bmap-body-fill{ fill:var(--bodyfill); stroke:var(--bodyfill-line); stroke-width:1.5; }
+  .bmap-body-stroke{ fill:none; stroke:var(--bodyfill); stroke-linecap:round; }
+  .bmap-side-label{ fill:var(--muted); font-family:'Kanit',sans-serif; font-weight:700; font-size:15px; }
+  .bmap-side-guide{ stroke:var(--line); stroke-width:1; stroke-dasharray:4 5; opacity:.55; }
+  #bodyMapSvg .gender-male, #bodyMapSvg .gender-female{ display:none; }
+  #bodyMapSvg[data-gender="male"] .gender-male{ display:block; }
+  #bodyMapSvg[data-gender="female"] .gender-female{ display:block; }
+  .bmap-marker-pulse{ animation:bmapPulse 1.8s ease-in-out infinite; }
+  @keyframes bmapPulse{ 0%,100%{ opacity:.35; r:9; } 50%{ opacity:0; r:16; } }
+  .bmap-legend-row{ display:flex; align-items:center; gap:8px; padding:7px 2px; border-bottom:1px dashed var(--line); font-size:12.5px; }
+  .bmap-legend-row:last-child{ border-bottom:none; }
+  .bmap-dot{ width:11px; height:11px; border-radius:50%; flex-shrink:0; }
+  .bmap-legend-row b{ color:var(--ink); white-space:nowrap; }
+  .bmap-detail{ color:var(--muted); font-size:11.5px; margin-left:auto; text-align:right; }
+  .bmap-sbar-box{ background:var(--panel2); border:1px dashed var(--line); border-radius:12px; padding:10px 12px; margin-top:14px; }
+  #bodyMapSbarPreview{ font-family:'JetBrains Mono',monospace; white-space:pre-wrap; font-size:11px; line-height:1.55;
+    color:var(--ink); max-height:170px; overflow-y:auto; }
+
+  /* ================= Save & Export modal ================= */
+  .export-save-btn{ width:100%; padding:16px; border-radius:14px; font-weight:700; font-size:15.5px; font-family:'Kanit',sans-serif;
+    color:#05100C; background:var(--ecg); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+    box-shadow:0 4px 16px rgba(14,158,117,.3); }
+  .export-save-btn:active{ transform:scale(.98); }
+  .export-success-banner{ display:flex; align-items:center; gap:8px; background:rgba(14,158,117,.14); border:1px solid var(--ecg);
+    color:var(--ecg); border-radius:12px; padding:12px 14px; font-weight:600; font-size:13.5px; margin-bottom:14px; }
+  .export-divider{ border-top:1px solid var(--line); margin-top:16px; padding-top:14px; }
+  .export-option-btn{ width:100%; padding:14px; border-radius:12px; font-weight:600; font-size:14.5px; font-family:'Kanit',sans-serif;
+    border:1px solid var(--line); background:var(--panel2); color:var(--ink); cursor:pointer; display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .export-option-btn:hover{ background:var(--chip); }
+  .export-option-btn:active{ transform:scale(.98); }
 </style>
 <style id="dynamicPrintStyle"></style>
 </head>
 <body class="min-h-screen pb-10">
 
-<div class="sticky top-0 z-30" style="background:linear-gradient(180deg,#0D131A,#0A0E13); border-bottom:1px solid var(--line);">
+<!-- Sidebar Nav: SBAR quick jump + focus mode -->
+<nav id="appSidebar" class="app-sidebar">
+  <button id="sidebarToggle" class="sidebar-toggle" onclick="toggleSidebar()" title="ย่อ/ขยายเมนู" aria-label="ย่อ/ขยายเมนู">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="18" height="18"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+  <div class="sidebar-items">
+    <button class="sidebar-item" data-nav="general" onclick="focusSection('general')" title="ข้อมูลทั่วไป">
+      <span class="sidebar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.2" r="3.4"></circle><path d="M4.8 21v-1.1c0-3.4 3.2-6.1 7.2-6.1s7.2 2.7 7.2 6.1V21"></path></svg></span>
+      <span class="sidebar-label">ข้อมูลทั่วไป</span>
+    </button>
+    <button class="sidebar-item" data-nav="s" onclick="focusSection('s')" title="S — Situation">
+      <span class="sidebar-badge badge-s">S</span><span class="sidebar-label">Situation</span>
+    </button>
+    <button class="sidebar-item" data-nav="b" onclick="focusSection('b')" title="B — Background">
+      <span class="sidebar-badge badge-b">B</span><span class="sidebar-label">Background</span>
+    </button>
+    <button class="sidebar-item" data-nav="a" onclick="focusSection('a')" title="A — Assessment">
+      <span class="sidebar-badge badge-a">A</span><span class="sidebar-label">Assessment</span>
+    </button>
+    <button class="sidebar-item" data-nav="r" onclick="focusSection('r')" title="R — Recommendation">
+      <span class="sidebar-badge badge-r">R</span><span class="sidebar-label">Recommendation</span>
+    </button>
+    <button class="sidebar-item" data-nav="print" onclick="focusSection('print')" title="พิมพ์ / Export">
+      <span class="sidebar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 9V3.6h11V9"></path><rect x="4" y="9" width="16" height="7.4" rx="1.4"></rect><path d="M6.5 14.2h11V21h-11z"></path></svg></span>
+      <span class="sidebar-label">พิมพ์ / Export</span>
+    </button>
+
+    <div class="sidebar-action-divider"></div>
+
+    <!-- Sidebar button #5: Preview คนไข้ / Body Map Modal -->
+    <button class="sidebar-item sidebar-action-preview" onclick="openBodyMapModal()" title="พรีวิวคนไข้ / Body Map">
+      <span class="sidebar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="M5 17c.8-2 2.5-3 4-3s3.2 1 4 3"></path><path d="M15 9h4M15 13h4"></path></svg></span>
+      <span class="sidebar-label">พรีวิวคนไข้ (Body Map)</span>
+    </button>
+
+    <!-- Sidebar button #6: Save & Export Options -->
+    <button class="sidebar-item sidebar-action-save" onclick="openExportModal()" title="บันทึก & Export">
+      <span class="sidebar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"></path><path d="M17 21v-8H7v8"></path><path d="M7 3v5h8"></path></svg></span>
+      <span class="sidebar-label">บันทึก & Export</span>
+    </button>
+  </div>
+  <button id="sidebarClearFocus" class="sidebar-item sidebar-clear hidden" onclick="focusSection(null)" title="แสดงทั้งหมด">
+    <span class="sidebar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+    <span class="sidebar-label">ล้างโฟกัส</span>
+  </button>
+</nav>
+<div id="sidebarBackdrop" class="sidebar-backdrop hidden" onclick="toggleSidebar(false)"></div>
+
+<!-- ============ MODAL (Sidebar #5): Preview คนไข้ / Body Map & Line-Tube Mapping ============ -->
+<div id="bodyMapModal" class="app-modal-backdrop hidden" onclick="if(event.target===this) closeBodyMapModal()">
+  <div class="app-modal-box">
+    <div class="app-modal-header">
+      <div class="app-modal-title">🧍 พรีวิวคนไข้ — Body Map & Line/Tube</div>
+      <button class="app-modal-close" onclick="closeBodyMapModal()" aria-label="ปิด">✕</button>
+    </div>
+    <div class="app-modal-body">
+      <p class="note mb-3">มุมมองจำลองคนไข้นอนหงาย (ซ้าย-ขวาในภาพ = ซ้าย-ขวาของคนไข้เอง) แสดงเฉพาะสาย/ท่อที่ติ๊ก "On" ไว้ในฟอร์มด้านบนเท่านั้น จุดที่ไม่ได้ On จะถูกซ่อนอัตโนมัติ</p>
+
+      <div class="gender-toggle-row">
+        <button class="gender-btn on" data-gender="male" onclick="setBodyMapGender('male')">♂️ ชาย</button>
+        <button class="gender-btn" data-gender="female" onclick="setBodyMapGender('female')">♀️ หญิง</button>
+      </div>
+
+      <div class="bodymap-wrap">
+        <svg id="bodyMapSvg" data-gender="male" viewBox="0 0 300 560" xmlns="http://www.w3.org/2000/svg">
+          <!-- MALE silhouette: broader shoulders, narrower hips -->
+          <g class="gender-male">
+            <ellipse class="bmap-body-fill" cx="150" cy="42" rx="30" ry="34"/>
+            <rect class="bmap-body-fill" x="136" y="72" width="28" height="20" rx="6"/>
+            <rect class="bmap-body-fill" x="95" y="95" width="110" height="90" rx="30"/>
+            <rect class="bmap-body-fill" x="105" y="175" width="90" height="115" rx="24"/>
+            <path class="bmap-body-stroke" d="M95,112 Q55,150 40,290" stroke-width="26"/>
+            <path class="bmap-body-stroke" d="M205,112 Q245,150 260,290" stroke-width="26"/>
+            <circle class="bmap-body-fill" cx="40" cy="300" r="15"/>
+            <circle class="bmap-body-fill" cx="260" cy="300" r="15"/>
+            <path class="bmap-body-stroke" d="M120,285 Q110,400 108,520" stroke-width="34"/>
+            <path class="bmap-body-stroke" d="M180,285 Q190,400 192,520" stroke-width="34"/>
+            <ellipse class="bmap-body-fill" cx="106" cy="535" rx="16" ry="10"/>
+            <ellipse class="bmap-body-fill" cx="194" cy="535" rx="16" ry="10"/>
+          </g>
+          <!-- FEMALE silhouette: narrower shoulders, wider hips, longer hair -->
+          <g class="gender-female">
+            <ellipse class="bmap-body-fill" cx="150" cy="42" rx="30" ry="34"/>
+            <path class="bmap-body-fill" d="M120,20 Q106,62 116,102 Q98,82 100,38 Z"/>
+            <path class="bmap-body-fill" d="M180,20 Q194,62 184,102 Q202,82 200,38 Z"/>
+            <rect class="bmap-body-fill" x="136" y="72" width="28" height="20" rx="6"/>
+            <rect class="bmap-body-fill" x="105" y="95" width="90" height="85" rx="26"/>
+            <rect class="bmap-body-fill" x="93" y="170" width="114" height="118" rx="30"/>
+            <path class="bmap-body-stroke" d="M105,112 Q65,150 50,290" stroke-width="24"/>
+            <path class="bmap-body-stroke" d="M195,112 Q235,150 250,290" stroke-width="24"/>
+            <circle class="bmap-body-fill" cx="50" cy="300" r="14"/>
+            <circle class="bmap-body-fill" cx="250" cy="300" r="14"/>
+            <path class="bmap-body-stroke" d="M118,288 Q108,400 106,520" stroke-width="32"/>
+            <path class="bmap-body-stroke" d="M182,288 Q192,400 194,520" stroke-width="32"/>
+            <ellipse class="bmap-body-fill" cx="104" cy="535" rx="15" ry="10"/>
+            <ellipse class="bmap-body-fill" cx="196" cy="535" rx="15" ry="10"/>
+          </g>
+          <!-- Left / Right side labels + center guide, always visible regardless of gender -->
+          <line x1="150" y1="8" x2="150" y2="552" class="bmap-side-guide"/>
+          <text x="35" y="20" text-anchor="middle" class="bmap-side-label">◄ ข้างซ้าย</text>
+          <text x="265" y="20" text-anchor="middle" class="bmap-side-label">ข้างขวา ►</text>
+
+          <!-- Device markers injected dynamically by renderBodyMap() -->
+          <g id="bodyMapMarkers"></g>
+        </svg>
+      </div>
+
+      <div class="flex gap-4 justify-center flex-wrap text-xs mb-3 font-medium">
+        <span style="color:var(--crit);">● ทางเดินหายใจ (Airway)</span>
+        <span style="color:var(--spo2);">● สายหลอดเลือด (Vascular)</span>
+        <span style="color:var(--amber);">● ท่อระบาย (Drainage)</span>
+      </div>
+
+      <div class="field-label mb-1">รายละเอียดอุปกรณ์ที่ On อยู่</div>
+      <div id="bodyMapLegend" class="mb-1"></div>
+
+      <div class="bmap-sbar-box">
+        <div class="field-label mb-1">พรีวิวข้อความ SBAR คร่าวๆ</div>
+        <pre id="bodyMapSbarPreview"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL (Sidebar #6): Save & Export Options ============ -->
+<div id="exportModal" class="app-modal-backdrop hidden" onclick="if(event.target===this) closeExportModal()">
+  <div class="app-modal-box">
+    <div class="app-modal-header">
+      <div class="app-modal-title">💾 บันทึก & Export ข้อมูล</div>
+      <button class="app-modal-close" onclick="closeExportModal()" aria-label="ปิด">✕</button>
+    </div>
+    <div class="app-modal-body">
+      <p class="note mb-3">ยืนยันบันทึกข้อมูลเข้าระบบก่อน แล้วจึงเลือกรูปแบบส่งออก — แยกจากปุ่ม "พรีวิวคนไข้" โดยเจตนา เพื่อไม่ให้พิมพ์/แชร์ข้อมูลผิดพลาดหน้างาน</p>
+
+      <div id="saveSuccessMsg" class="export-success-banner hidden">
+        ✅ บันทึกข้อมูลเข้าระบบเรียบร้อย — เลือกรูปแบบส่งออกด้านล่างได้เลย
+      </div>
+
+      <button id="saveConfirmBtn" class="export-save-btn" onclick="confirmSaveRecord()">
+        ✅ ยืนยันบันทึกข้อมูลเข้าระบบ
+      </button>
+
+      <div id="exportOptionsWrap" class="export-divider hidden">
+        <div class="field-label mb-2">เลือกรูปแบบ Export</div>
+        <button class="export-option-btn" onclick="printSlip()">🖨️ พิมพ์ใบเสร็จ SBAR (Thermal Printer)</button>
+        <button class="export-option-btn" onclick="printLabel()">🏷️ พิมพ์สติกเกอร์ Todo List</button>
+        <button class="export-option-btn" onclick="copySlipFromModal()">📋 คัดลอกข้อความ SBAR</button>
+        <button class="export-option-btn" style="background:rgba(6,199,85,.12); border-color:#06C755; color:#06C755;" onclick="shareLine()">💬 แชร์เข้า LINE (ซ่อนชื่อผู้ป่วย)</button>
+        <p id="copyToastModal" class="text-center text-sm font-medium mt-2 hidden" style="color:var(--ecg);">คัดลอกสำเร็จ ✓</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="app-header sticky top-0 z-30" style="border-bottom:1px solid var(--line);">
   <div class="max-w-4xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
     <div class="flex items-center gap-2">
-      <span class="text-white font-semibold font-display text-sm sm:text-base">🏥 ICU Smart Handover &amp; SBAR Pro</span>
+      <span class="app-header-title font-semibold font-display text-sm sm:text-base">ICU Smart Handover &amp; SBAR Pro</span>
     </div>
     <div class="flex items-center gap-3">
       <button id="themeToggle" onclick="toggleTheme()" class="chip chip-sm font-medium" title="สลับโหมดกลางวัน/กลางคืน">Mode 🌤️</button>
-      <input id="globalSearch" oninput="filterKeywords(this.value)" class="field-input text-xs py-1.5 px-2 w-32 sm:w-48" placeholder="🔍 ค้นหาคีย์เวิร์ด..." />
+      <input id="globalSearch" oninput="filterKeywords(this.value)" class="field-input text-xs py-1.5 px-2 w-32 sm:w-48" placeholder="ค้นหาคีย์เวิร์ด..." />
       <div class="flex items-center gap-2">
         <div id="sosGauge" class="sos-gauge"><div class="sos-gauge-inner"><span id="sosNum" class="mono">-</span></div></div>
         <div class="hidden sm:block">
@@ -110,8 +411,8 @@
 <div class="max-w-4xl mx-auto px-4 sm:px-6 py-5 space-y-4 searchable-section">
 
   <!-- General Info -->
-  <div class="card p-4 sm:p-5">
-    <h2 class="font-display font-semibold text-base mb-3 text-slate-100">🛏️ ข้อมูลทั่วไปผู้ป่วย ICU</h2>
+  <div class="card p-4 sm:p-5" data-section="general">
+    <h2 class="font-display font-semibold text-base mb-3 text-slate-100">ข้อมูลทั่วไปผู้ป่วย ICU</h2>
     <div class="field-label">เลือกเตียงผู้ป่วย</div>
     <div id="bedGrid" class="grid grid-cols-5 sm:grid-cols-10 gap-3 mb-4"></div>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
@@ -120,7 +421,7 @@
       <div><div class="field-label">วันที่ Admit</div><input id="admitDay" type="date" class="field-input" onclick="this.showPicker && this.showPicker()" oninput="calcAdmitDate()" /></div>
     </div>
     <div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl mb-4" style="background:var(--panel2); border:1px solid var(--line);">
-      <span id="calculatedStay" class="text-sm font-semibold" style="color:var(--spo2);">📅 วันที่ Admit: - | ระยะเวลา: -</span>
+      <span id="calculatedStay" class="text-sm font-semibold" style="color:var(--spo2);">วันที่ Admit: - | ระยะเวลา: -</span>
       <span id="currentShiftDisplay" class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:var(--chip); border:1px solid var(--line); color:var(--muted);">เวร: ยังไม่เลือก</span>
     </div>
     <div class="field-label">เวรปฏิบัติงาน (Shift)</div>
@@ -130,11 +431,15 @@
   </div>
 
   <!-- S: Situation -->
-  <div class="card card-s p-4 sm:p-5">
+  <div class="card card-s p-4 sm:p-5" data-section="s">
     <div class="flex items-center gap-3 mb-3">
       <div class="section-badge badge-s">S</div>
       <div><h2 class="font-display font-semibold text-base leading-tight text-slate-100">Situation — Critical Alerts &amp; Safety Flags</h2>
       <p class="text-xs" style="color:var(--muted);">Precaution, การให้อาหาร และเป้าหมายของเวรนี้</p></div>
+    </div>
+    <div class="mb-4">
+      <div class="field-label">อาการสำคัญปัจจุบัน (Chief Complaint / Current Symptoms)</div>
+      <textarea id="chiefComplaint" rows="2" class="field-input" placeholder="เช่น ไข้สูง หนาวสั่น BP ตก, หายใจเหนื่อยมากขึ้น, ซึมลงจากเดิม..." oninput="state.chiefComplaint=this.value; updateSlip();" style="resize:vertical;"></textarea>
     </div>
     <div class="grid sm:grid-cols-2 gap-3">
       <div><div class="field-label">Infection Control / Precautions</div>
@@ -152,50 +457,94 @@
   </div>
 
   <!-- B: Background — Diagnosis & Categorized Drugs -->
-  <div class="card card-b p-4 sm:p-5">
+  <div class="card card-b p-4 sm:p-5" data-section="b">
     <div class="flex items-center gap-3 mb-3">
       <div class="section-badge badge-b">B</div>
       <div><h2 class="font-display font-semibold text-base leading-tight text-slate-100">Background — Diagnosis, Drugs &amp; ATB</h2>
       <p class="text-xs" style="color:var(--muted);">โรคหลักและยาที่ให้อยู่ แบ่งหมวดหมู่ชัดเจน</p></div>
     </div>
 
-    <p class="text-xs mb-2" style="color:var(--muted);">คลิกเลือกโรคสำคัญใน ICU หรือพิมพ์เพิ่ม:</p>
-    <div id="dxQuick" class="flex flex-wrap gap-1.5 mb-3"></div>
-    <div class="flex gap-2 mb-2">
+    <div class="field-label">ค้นหาโรค (พิมพ์เพื่อกรองแบบเรียลไทม์)</div>
+    <input id="dxSearchInput" class="field-input mb-2" placeholder="พิมพ์ เช่น sep, ards, stroke..." oninput="filterDxQuick(this.value)" />
+    <div id="dxQuick" class="flex flex-wrap gap-1.5 mb-1"></div>
+    <p id="dxEmptyHint" class="note" style="padding:6px 2px;">ยังไม่ได้เลือกโรค — พิมพ์ค้นหาด้านบนเพื่อเพิ่ม</p>
+    <p id="dxNoMatch" class="note hidden" style="padding:6px 2px;">ไม่พบโรคที่ตรงกับคำค้นหา — พิมพ์เพิ่มด้านล่างได้เลย</p>
+    <div class="flex gap-2 mb-2 mt-2">
       <input id="dxCustomInput" class="field-input" placeholder="โรคอื่นๆ (พิมพ์เพิ่มได้เสมอ)" />
       <button onclick="addCustomDx()" class="px-4 rounded-lg text-white font-medium text-sm" style="background:var(--violet); color:#1a0b2e;">+</button>
     </div>
     <div id="dxCustomList" class="flex flex-wrap gap-2 mb-4"></div>
 
+    <div class="field-label">DTX Range (ช่วงค่าน้ำตาลของกะนี้)</div>
+    <div class="grid grid-cols-2 gap-2 mb-4">
+      <input id="dtxRangeMin" type="number" inputmode="numeric" class="field-input" placeholder="Min (mg/dL)" oninput="state.dtxRange.min=this.value; updateSlip();" />
+      <input id="dtxRangeMax" type="number" inputmode="numeric" class="field-input" placeholder="Max (mg/dL)" oninput="state.dtxRange.max=this.value; updateSlip();" />
+    </div>
+
     <span class="drug-cat-header" style="background:rgba(255,90,114,.15); color:var(--crit);">Vasopressor / Inotrope</span>
-    <div id="drugVasoQuick" class="flex flex-wrap gap-1.5 mb-3"></div>
+    <div id="drugVasoQuick" class="drug-chip-grid mb-1.5"></div>
+    <div class="flex gap-2 mb-1.5">
+      <input id="drugVasoCustomInput" class="field-input" placeholder="+ ยาอื่นๆ ในหมวดนี้ (พิมพ์เอง)" onkeydown="if(event.key==='Enter'){event.preventDefault(); addCustomDrug('vaso');}" />
+      <button onclick="addCustomDrug('vaso')" class="px-4 rounded-lg text-white font-medium text-sm" style="background:var(--crit); color:#1a0b2e;">+</button>
+    </div>
+    <div id="drugVasoDoseExpand" class="drug-dose-expand mb-3"></div>
 
     <span class="drug-cat-header" style="background:rgba(242,185,74,.15); color:var(--amber);">Antibiotics (ATB) / Antifungal</span>
-    <div id="drugAtbQuick" class="flex flex-wrap gap-1.5 mb-3"></div>
+    <div id="drugAtbQuick" class="drug-chip-grid mb-1.5"></div>
+    <div class="flex gap-2 mb-1.5">
+      <input id="drugAtbCustomInput" class="field-input" placeholder="+ ยาอื่นๆ ในหมวดนี้ (พิมพ์เอง)" onkeydown="if(event.key==='Enter'){event.preventDefault(); addCustomDrug('atb');}" />
+      <button onclick="addCustomDrug('atb')" class="px-4 rounded-lg text-white font-medium text-sm" style="background:var(--amber); color:#1a0b2e;">+</button>
+    </div>
+    <div id="drugAtbDoseExpand" class="drug-dose-expand mb-3"></div>
 
     <span class="drug-cat-header" style="background:rgba(51,199,240,.15); color:var(--spo2);">Other Medications / Drips</span>
-    <div id="drugOtherQuick" class="flex flex-wrap gap-1.5 mb-3"></div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-2">
-      <input id="drugName" class="field-input sm:col-span-2" placeholder="ชื่อยา (คลิกเลือกด้านบน หรือพิมพ์เอง — ไม่มีในรายการก็เพิ่มได้เสมอ)" />
-      <input id="drugConc" class="field-input" placeholder="Concentration / Dose" />
-      <input id="drugRate" class="field-input" placeholder="Rate (พิมพ์ หรือคลิกด้านล่าง)" />
+    <div id="drugOtherQuick" class="drug-chip-grid mb-1.5"></div>
+    <div class="flex gap-2 mb-1.5">
+      <input id="drugOtherCustomInput" class="field-input" placeholder="+ ยาอื่นๆ ในหมวดนี้ (พิมพ์เอง)" onkeydown="if(event.key==='Enter'){event.preventDefault(); addCustomDrug('other');}" />
+      <button onclick="addCustomDrug('other')" class="px-4 rounded-lg text-white font-medium text-sm" style="background:var(--spo2); color:#1a0b2e;">+</button>
     </div>
-    <div class="field-label">Conc. ที่ใช้บ่อย</div>
-    <div id="concQuick" class="flex flex-wrap gap-1.5 mb-2"></div>
-    <div class="field-label">Rate ที่ใช้บ่อย</div>
-    <div id="rateQuick" class="flex flex-wrap gap-1.5 mb-2"></div>
-    <button onclick="addDrug()" class="px-4 py-2 rounded-lg font-medium text-sm" style="background:var(--violet); color:#1a0b2e;">+ เพิ่มดริปยา / ATB</button>
+    <div id="drugOtherDoseExpand" class="drug-dose-expand mb-3"></div>
+
+    <div id="drugEntryHome"></div>
+    <div id="drugEntryForm">
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-2 mt-1">
+        <input id="drugName" class="field-input sm:col-span-2" placeholder="ชื่อยา (คลิกเลือกด้านบน หรือพิมพ์เอง — ไม่มีในรายการก็เพิ่มได้เสมอ)" />
+        <input id="drugConc" class="field-input" placeholder="Concentration / Dose" />
+        <input id="drugRate" class="field-input" placeholder="Rate (พิมพ์ หรือคลิกด้านบน)" />
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="addDrugBtn" onclick="addDrug()" class="add-drug-btn px-4 py-2 rounded-lg font-medium text-sm" style="background:var(--violet); color:#1a0b2e;">+ เพิ่มดริปยา / ATB</button>
+        <span id="addDrugHint" class="hidden" style="font-size:12px; font-weight:600; color:var(--violet);">← กดเพิ่มก่อนไปยาตัวถัดไป</span>
+      </div>
+    </div>
     <div id="drugList" class="mt-3 space-y-2"></div>
   </div>
 
   <!-- A: Assessment — GCS + SOS Score (choice-based, 6 parameters) -->
-  <div class="card card-a p-4 sm:p-5">
+  <div class="card card-a p-4 sm:p-5" data-section="a">
     <div class="flex items-center gap-3 mb-1">
       <div class="section-badge badge-a">A</div>
       <div><h2 class="font-display font-semibold text-base leading-tight text-slate-100">Assessment — GCS &amp; SOS Score</h2>
       <p class="text-xs" style="color:var(--muted);">คลิกเลือกช่วงค่า ไม่ต้องพิมพ์ตัวเลข — คำนวณคะแนนอัตโนมัติ</p></div>
     </div>
+
+    <div class="grid grid-cols-2 gap-2 mb-3">
+      <div class="p-3 rounded-xl" style="background:var(--panel2); border:1px solid var(--line);">
+        <div class="field-label mb-1.5">กรอกคะแนน SOS (ถ้ามีจาก HOSxP)</div>
+        <div class="flex items-center gap-2 mb-1.5">
+          <input id="sosManualInput" type="number" min="0" max="18" inputmode="numeric" class="mono font-bold text-xl" style="width:60px; text-align:center; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:6px 4px; color:var(--spo2);" placeholder="-" oninput="onSosManualChange()" />
+          <span class="text-sm" style="color:var(--muted);">/ 18</span>
+        </div>
+        <span id="assessSummaryStatus" class="text-xs font-semibold px-2.5 py-1 rounded-full inline-block" style="background:var(--chip); color:var(--muted);">ยังไม่ได้คำนวณ</span>
+      </div>
+      <button id="assessSummaryToggle" class="p-3 rounded-xl flex flex-col items-center justify-center gap-1 text-center" onclick="toggleAssessAccordion()" style="background:var(--panel2); border:1px solid var(--line);">
+        <span class="font-display font-semibold text-sm" style="color:var(--spo2);">คำนวณเอง</span>
+        <span class="text-xs" style="color:var(--muted);">เลือกค่า Vital Signs ทีละข้อ</span>
+        <span id="assessChevron" class="task-chevron">▾</span>
+      </button>
+    </div>
+
+    <div id="assessAccordionBody" class="hidden">
     <p class="note mb-3">อ้างอิง: SOS (Search Out Severity) Score — แนวปฏิบัติทีม PCT รพ.บ้านผือ / ใช้แพร่หลายในการเฝ้าระวังก่อนภาวะวิกฤตและ Sepsis ใน รพ. ไทย โปรดเทียบกับแบบฟอร์มฉบับที่หน่วยงานของท่านใช้จริง เนื่องจากบาง รพ. อาจปรับช่วงคะแนนต่างกันเล็กน้อย</p>
 
     <div class="subgroup-label">GCS (สำหรับบันทึกทางระบบประสาทแยกต่างหาก)</div>
@@ -256,10 +605,29 @@
       <div class="field-label">หมายเหตุการประเมินเพิ่มเติม</div>
       <input id="assessNote" class="field-input" placeholder="พิมพ์ข้อสังเกตอื่นๆ เกี่ยวกับอาการผู้ป่วย..." oninput="updateSlip()" />
     </div>
+    </div>
+
+    <!-- IV Fluids & Drips Handover -->
+    <div class="mt-5 pt-4" style="border-top:1px solid var(--line);">
+      <div class="field-label mb-2">สารน้ำ IV Fluids &amp; Drips ที่ On อยู่ (ส่งต่อยอดคงเหลือ)</div>
+      <div id="ivDripsSummary" class="mb-3"></div>
+      <div id="ivFluidList" class="space-y-2 mb-3"></div>
+      <div class="p-3 rounded-xl" style="background:var(--panel2); border:1px solid var(--line);">
+        <div class="grid sm:grid-cols-2 gap-3 mb-2">
+          <div><div class="field-label">ชนิดสารน้ำ</div><div id="ivFluidTypeGrid" class="flex flex-wrap gap-1.5"></div></div>
+          <div><div class="field-label">ขนาดถุง (ml)</div><div id="ivBagSizeGrid" class="flex flex-wrap gap-1.5"></div></div>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-3 mb-2">
+          <div><div class="field-label">อัตราการให้ (Rate ml/hr)</div><div id="ivRateGrid" class="flex flex-wrap gap-1.5"></div></div>
+          <div><div class="field-label">สารน้ำคงเหลือตอนนี้ (ml)</div><input id="ivRemaining" type="number" inputmode="numeric" class="field-input" placeholder="เช่น 350" /></div>
+        </div>
+        <button onclick="addIvFluid()" class="w-full py-2 rounded-lg font-medium text-sm" style="background:var(--violet); color:#1a0b2e;">+ เพิ่มถุงสารน้ำ</button>
+      </div>
+    </div>
   </div>
 
   <!-- R: Recommendation -->
-  <div class="card card-r p-4 sm:p-5">
+  <div class="card card-r p-4 sm:p-5" data-section="r">
     <div class="flex items-center gap-3 mb-4">
       <div class="section-badge badge-r">R</div>
       <div><h2 class="font-display font-semibold text-base leading-tight text-slate-100">Recommendation — Vent, Lines, Labs &amp; Plan</h2>
@@ -295,11 +663,25 @@
           <input id="ventPsCustom" class="field-input text-xs py-1.5" placeholder="พิมพ์ค่าอื่น..." oninput="state.vent.psCustom=this.value; updateSlip();" />
         </div>
       </div>
+      <div class="mb-2">
+        <div class="subgroup-label">Tv (Tidal Volume, ml)</div><div id="ventTvGrid" class="flex flex-wrap gap-1.5 mb-1"></div>
+        <input id="ventTvCustom" class="field-input text-xs py-1.5" placeholder="พิมพ์ค่าอื่น..." oninput="state.vent.tvCustom=this.value; updateSlip();" />
+      </div>
+      <div class="grid grid-cols-2 gap-3 mb-2">
+        <div>
+          <div class="subgroup-label">ขนาดทิวบ์ (Tube Size, mm)</div><div id="ventTubeSizeGrid" class="flex flex-wrap gap-1.5 mb-1"></div>
+          <input id="ventTubeSizeCustom" class="field-input text-xs py-1.5" placeholder="พิมพ์ค่าอื่น..." oninput="state.vent.tubeSizeCustom=this.value; updateSlip();" />
+        </div>
+        <div>
+          <div class="subgroup-label">Mark ทิวบ์ (cm ที่มุมปาก/จมูก)</div><div id="ventTubeMarkGrid" class="flex flex-wrap gap-1.5 mb-1"></div>
+          <input id="ventTubeMarkCustom" class="field-input text-xs py-1.5" placeholder="พิมพ์ค่าอื่น..." oninput="state.vent.tubeMarkCustom=this.value; updateSlip();" />
+        </div>
+      </div>
     </div>
     <p id="ventNoneNote" class="note mb-2 hidden">* โหมดนี้ไม่ต้องตั้งค่า PEEP/PS (เช่น HFNC/Mask/Cannula/Room air)</p>
-    <div class="field-label">รายละเอียดเพิ่มเติม (Vt, Set RR, I:E, Flow L/min สำหรับ HFNC/Cannula ฯลฯ — พิมพ์เพิ่มได้เสมอ)</div>
+    <div class="field-label">รายละเอียดเพิ่มเติม (Set RR, I:E, Flow L/min สำหรับ HFNC/Cannula ฯลฯ — พิมพ์เพิ่มได้เสมอ)</div>
 
-    <input id="ventExtra" class="field-input mb-4" placeholder="เช่น Vt 450 ml, Set RR 14, I:E 1:2" oninput="updateSlip()" />
+    <input id="ventExtra" class="field-input mb-4" placeholder="เช่น Set RR 14, I:E 1:2, Flow 40 L/min" oninput="updateSlip()" />
 
     <div class="field-label mb-2">8-hr Fluid Balance (ต่อเวร)</div>
     <div class="grid grid-cols-2 gap-3 mb-2">
@@ -312,57 +694,56 @@
     </div>
 
     <div class="field-label mb-2">ติ๊กเลือกสาย / ท่อระบายในร่างกาย</div>
-    <div id="linesGrid" class="grid sm:grid-cols-3 gap-2 mb-3"></div>
-    <div id="linesDetailArea" class="space-y-3 mb-4"></div>
+    <div id="linesGrid" class="flex flex-col gap-2 mb-4"></div>
 
     <div class="subgroup-label">DTX Monitoring (Capillary Blood Glucose)</div>
     <div class="field-label">รอบตรวจ (Interval)</div>
     <div id="dtxIntervalGrid" class="flex flex-wrap gap-1.5 mb-2"></div>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
-      <input id="dtxTime" class="field-input" placeholder="เวลา เช่น 08:00" />
-      <input id="dtxValue" class="field-input" placeholder="ค่า DTX (mg/dL)" />
-      <button onclick="addDtxReading()" class="px-4 py-2 rounded-lg font-medium text-sm" style="background:var(--spo2); color:#05141B;">+ เพิ่มค่า DTX</button>
+    <div class="field-label">ค่า DTX ที่วัดได้ในเวรนี้ (Min–Max)</div>
+    <div class="grid grid-cols-2 gap-2 mb-4">
+      <input id="dtxMin" type="number" inputmode="numeric" class="field-input" placeholder="Min (mg/dL)" oninput="state.dtx.min=this.value; updateSlip();" />
+      <input id="dtxMax" type="number" inputmode="numeric" class="field-input" placeholder="Max (mg/dL)" oninput="state.dtx.max=this.value; updateSlip();" />
     </div>
-    <div id="dtxList" class="space-y-1 mb-4"></div>
 
     <div class="subgroup-label">Labs Monitor</div>
     <div id="labsGroupsContainer" class="space-y-3 mb-3 mt-1"></div>
     <div class="field-label mt-1 mb-2">Blood Bank / Other Labs (พิมพ์เพิ่มได้เสมอ)</div>
     <input id="bloodBankInfo" class="field-input mb-4" placeholder="เช่น PRC O- 2 units matched" oninput="updateSlip()" />
 
-    <div class="subgroup-label">หมายเหตุ / สิ่งที่ต้องติดตามเพิ่มเติม (Pending Tasks)</div>
-    <div id="followupGrid" class="flex flex-wrap gap-1.5 mb-2"></div>
-    <input id="followupCustom" class="field-input hidden mb-2" placeholder="ระบุเพิ่มเติม..." oninput="state.followupCustomText=this.value; updateSlip();" />
+    <div class="subgroup-label">สิ่งที่ต้องส่งต่อ / Pending Tasks — แตะหมวดเพื่อเลือกรายการ (เหมือนหยิบใส่ตะกร้า)</div>
+    <div id="taskCategories" class="flex flex-col gap-2 mb-2"></div>
+    <div id="taskBasketSummary" class="hidden mb-3"></div>
     <div class="field-label">โน้ตอิสระ (พิมพ์อะไรก็ได้ที่นอกเหนือจากช้อยด้านบน)</div>
     <input id="freeNote" class="field-input" placeholder="พิมพ์โน้ตเพิ่มเติม..." oninput="updateSlip()" />
   </div>
 
   <!-- Export / Print Slip -->
-  <div class="card p-4 sm:p-5">
-    <h2 class="font-display font-semibold text-base mb-3 text-slate-100">🖨️ พรีวิวสลิป SBAR</h2>
+  <div class="card p-4 sm:p-5" data-section="print">
+    <h2 class="font-display font-semibold text-base mb-1 text-slate-100">พรีวิวใบเสร็จ SBAR (Receipt)</h2>
+    <p class="text-xs mb-3" style="color:var(--muted);">พิมพ์ออกมาเป็น "ใบเสร็จกระดาษ" ต่อเนื่องจากเครื่องพิมพ์ความร้อน (Thermal/Receipt Printer) — ไม่ใช่กระดาษ A4 ต้องใช้เครื่องพิมพ์ใบเสร็จ 58/80mm จริงถึงจะออกมาเป็นม้วนยาวแบบนี้</p>
     <div class="field-label">ขนาดกระดาษเครื่องพิมพ์ความร้อน (Thermal Printer)</div>
     <div id="printWidthGrid" class="flex gap-2 mb-3"></div>
     <div class="rounded-xl p-3 mb-3 bg-white border border-dashed max-w-340px mx-auto" style="border-color:var(--line);">
       <div id="printArea"><pre id="slip"></pre></div>
     </div>
     <div class="flex flex-col sm:flex-row gap-2">
-      <button id="printSlipBtn" onclick="printSlip()" class="flex-1 py-3 rounded-xl font-semibold text-white font-display" style="background:#1E293B;">🖨️ พิมพ์สลิป SBAR</button>
-      <button onclick="copySlip()" class="flex-1 py-3 rounded-xl font-semibold font-display" style="background:var(--spo2); color:#05141B;">📋 คัดลอกข้อความ SBAR</button>
+      <button id="printSlipBtn" onclick="printSlip()" class="flex-1 py-3 rounded-xl font-semibold text-white font-display" style="background:#1E293B;">พิมพ์ใบเสร็จ SBAR</button>
+      <button onclick="copySlip()" class="flex-1 py-3 rounded-xl font-semibold font-display" style="background:var(--spo2); color:#05141B;">คัดลอกข้อความ SBAR</button>
     </div>
     <div class="mt-2">
-      <button onclick="shareLine()" class="w-full py-3 rounded-xl font-semibold font-display" style="background:#06C755; color:#ffffff;">📱 แชร์เข้า LINE (ซ่อนชื่อผู้ป่วย เหลือแค่ HN)</button>
+      <button onclick="shareLine()" class="w-full py-3 rounded-xl font-semibold font-display" style="background:#06C755; color:#ffffff;">แชร์เข้า LINE (ซ่อนชื่อผู้ป่วย เหลือแค่ HN)</button>
     </div>
     <p id="copyToast" class="text-center text-sm font-medium mt-2 hidden" style="color:var(--ecg);">คัดลอกสำเร็จ ✓</p>
   </div>
 
-  <!-- Thermal Label / Sticker Print -->
-  <div class="card p-4 sm:p-5">
-    <h2 class="font-display font-semibold text-base mb-1 text-slate-100">🏷️ พิมพ์สติกเกอร์ซองยา / ใบเสร็จขนาดเล็ก</h2>
-    <p class="text-xs mb-3" style="color:var(--muted);">สรุปย่อสำหรับติดซองยา/ใบเสร็จหน้าเตียง — ใช้กระดาษความร้อนขนาดเดียวกับด้านบน</p>
+  <!-- Thermal Sticker: Todo List -->
+  <div class="card p-4 sm:p-5" data-section="print">
+    <h2 class="font-display font-semibold text-base mb-1 text-slate-100">สติกเกอร์ Todo List</h2>
+    <p class="text-xs mb-3" style="color:var(--muted);">พิมพ์เป็นสติกเกอร์รายการสิ่งที่ต้องทำ (จาก "สิ่งที่ต้องส่งต่อ" ด้านบน) แปะหน้าเตียง/บอร์ดได้เลย — ใช้กระดาษความร้อนขนาดเดียวกับด้านบน</p>
     <div class="rounded-xl p-3 mb-3 bg-white border border-dashed max-w-340px mx-auto" style="border-color:var(--line);">
       <div id="labelPrintArea"><pre id="labelSlip"></pre></div>
     </div>
-    <button id="printLabelBtn" onclick="printLabel()" class="w-full py-3 rounded-xl font-semibold text-white font-display" style="background:#7C3AED;">🏷️ พิมพ์สติกเกอร์ซองยา</button>
+    <button id="printLabelBtn" onclick="printLabel()" class="w-full py-3 rounded-xl font-semibold text-white font-display" style="background:#7C3AED;">พิมพ์สติกเกอร์ Todo List</button>
   </div>
 
 </div>
@@ -370,22 +751,27 @@
 <script>
 const state = {
   bed: null, hn:'', pname:'', admitDay:'', shift: null, recordedBy:'', printWidth:'80',
+  ivFluids: [],
   gcs: { E: null, V: null, M: null },
   sos: { temp:null, bp:null, pulse:null, resp:null, conscious:null, urine:null, urineInterval:'1hr' },
+  sosManual: '',
   precautions: [], precautionsCustomText:'',
   mdr: [], mdrCustomText:'',
   feeding: '', feedingCustomText:'',
+  chiefComplaint: '',
   dx: [], dxCustom: [],
+  dtxRange: { min:'', max:'' },
   drugs: [],
-  vent: { mode:'', subMode:'', fio2:'', peep:'', ps:'', peepCustom:'', psCustom:'', mainModeCustomText:'' },
+  vent: { mode:'', subMode:'', fio2:'', peep:'', ps:'', peepCustom:'', psCustom:'', mainModeCustomText:'', tv:'', tvCustom:'', tubeSize:'', tubeSizeCustom:'', tubeMark:'', tubeMarkCustom:'' },
   lines: {},
+  gender: 'male',
   io: { intake:'', output:'' },
-  dtx: { interval:'', readings:[] },
+  dtx: { interval:'', min:'', max:'' },
   labs: { WBC:'', Hb:'', Hct:'', Plt:'', Na:'', K:'', Cl:'', HCO3:'', BUN:'', Cr:'', pH:'', pCO2:'', PaO2:'', Lactate:'' },
-  followup: [], followupCustomText:''
+  tasks: {}, tasksCustom: {}, taskExpanded: {}, taskPriority: {}
 };
 
-const SHIFTS = [ { id:'morning', label:'☀️ เวรเช้า' }, { id:'afternoon', label:'🌅 เวรบ่าย' }, { id:'night', label:'🌙 เวรดึก' } ];
+const SHIFTS = [ { id:'morning', label:'เวรเช้า' }, { id:'afternoon', label:'เวรบ่าย' }, { id:'night', label:'เวรดึก' } ];
 const PRECAUTIONS = ['Standard', 'Contact', 'Droplet', 'Airborne', 'Protective/Neutropenic', 'อื่นๆ (ระบุ)'];
 const MDR_ORGANISMS = ['A. baumannii (CRAB/MDR)', 'Pseudomonas aeruginosa (MDR)', 'VRE', 'MRSA', 'ESBL E.coli/Klebsiella', 'CRE', 'อื่นๆ (ระบุ)'];
 const FEEDINGS = ['NPO', 'Sip Feeding', 'Tube Feeding Trophic 10-20 ml/hr', 'Tube Feeding Full Rate', 'Post-pyloric Feeding', 'Total Parenteral Nutrition (TPN)', 'อื่นๆ (ระบุ)'];
@@ -407,28 +793,46 @@ const DRUG_ATB = ['Meropenem', 'Piperacillin/Tazobactam', 'Colistin', 'Vancomyci
 const DRUG_OTHER = ['Propofol (Sedation)', 'Midazolam (Sedation)', 'Dexmedetomidine (Sedation)', 'Fentanyl Drip', 'Morphine', 'Cisatracurium (Paralytic)',
   'Regular Insulin Drip', 'Heparin Drip', 'Furosemide Drip', 'Sodium Bicarbonate Drip', 'KCl Replacement', 'MgSO4 Replacement'];
 
-const RATE_QUICK = ['1 ml/hr','2 ml/hr','5 ml/hr','10 ml/hr','15 ml/hr','20 ml/hr','30 ml/hr','50 ml/hr'];
+const IV_FLUID_TYPES = ['NSS 0.9%','D5W','D5NSS','D5N/2','Ringer\'s Lactate (RLS)','Acetar','Dextran','Voluven/HES','อื่นๆ (ระบุ)'];
+const IV_BAG_SIZES = ['100','250','500','1000'];
+const IV_RATE_OPTS = ['20','40','60','80','100','120','150','200'];
+
+const RATE_QUICK = ['1 ml/hr','2 ml/hr','5 ml/hr','10 ml/hr','15 ml/hr','20 ml/hr','30 ml/hr','50 ml/hr','Infuse 30 min','Infuse 60 min','Infuse 2 hr','Infuse 4 hr'];
 const CONC_QUICK = [
+  // Vasopressor/Inotrope
   'Norepi 4mg/100ml D5W (40mcg/ml)', 'Norepi 8mg/250ml D5W (32mcg/ml)',
   'Epinephrine 1mg/100ml D5W (10mcg/ml)', 'Epinephrine 1:1000 (1mg/ml)',
   'Dopamine 250mg/250ml D5W (1mg/ml)', 'Dobutamine 250mg/250ml D5W (1mg/ml)',
   'Vasopressin 20u/100ml NSS (0.2u/ml)',
-  'Fentanyl 500mcg/50ml NSS (10mcg/ml)', 'Fentanyl 1000mcg/50ml NSS (20mcg/ml)', 'Fentanyl 2500mcg/50ml NSS (50mcg/ml)', 'Midazolam 50mg/50ml NSS (1mg/ml)',
+  'Phenylephrine 10mg/100ml NSS (100mcg/ml)', 'Phenylephrine 20mg/250ml NSS (80mcg/ml)',
+  'Milrinone 20mg/100ml NSS (200mcg/ml)',
+  // Sedation/Analgesia
+  'Fentanyl 500mcg/50ml NSS (10mcg/ml)', 'Fentanyl 1000mcg/50ml NSS (20mcg/ml)', 'Fentanyl 2500mcg/50ml NSS (50mcg/ml)',
+  'Midazolam 50mg/50ml NSS (1mg/ml)', 'Morphine 50mg/50ml NSS (1mg/ml)',
   'Propofol 1% (10mg/ml)', 'Dexmedetomidine 200mcg/50ml NSS (4mcg/ml)',
+  'Cisatracurium 100mg/50ml NSS (2mg/ml)',
+  // Antibiotics/Antifungal (common bag preparation)
+  'Meropenem 1g/100ml NSS (infuse 30-60min)', 'Piperacillin/Tazobactam 4.5g/100ml NSS (infuse 30min-4hr)',
+  'Colistin 150mg CBA/100ml NSS (infuse 30-60min)', 'Vancomycin 1g/250ml NSS (infuse ≥60min)',
+  'Ceftriaxone 2g/100ml NSS (infuse 30min)', 'Levofloxacin 500mg/100ml (infuse 60min)',
+  'Fluconazole 400mg/200ml (infuse 60min)', 'Amphotericin B 50mg/500ml D5W (infuse 4-6hr)',
+  // Other Drips
   'Heparin 25,000u/250ml NSS (100u/ml)', 'Regular Insulin 50u/50ml NSS (1u/ml)',
+  'Furosemide 100mg/50ml NSS (2mg/ml)', 'KCl 20mEq/100ml NSS (0.2mEq/ml, via CVC)',
   'MgSO4 2g/100ml NSS (20mg/ml)', 'Sodium Bicarbonate 7.5% (50ml)'
 ];
 
 const LINES_DEF = [
-  { id:'ett', name:'ET Tube (ETT)', hasSecretion:true },
-  { id:'trach', name:'Tracheostomy', hasSecretion:true },
-  { id:'aline', name:'A-Line (Arterial Line)', hasSecretion:false },
-  { id:'cvc', name:'CVC / Central Line', hasSecretion:false },
-  { id:'foley', name:'Foley Catheter', hasSecretion:false },
-  { id:'icd', name:'ICD (Chest Tube)', hasSecretion:true },
-  { id:'crrt', name:'CRRT / Hemodialysis Catheter', hasSecretion:false }
+  { id:'ett', name:'ET Tube (ETT)', hasSecretion:true, hasPosition:false },
+  { id:'trach', name:'Tracheostomy', hasSecretion:true, hasPosition:false },
+  { id:'aline', name:'A-Line (Arterial Line)', hasSecretion:false, hasPosition:true },
+  { id:'cvc', name:'CVC / Central Line', hasSecretion:false, hasPosition:true },
+  { id:'heplock', name:'Heparin Lock / PIV', hasSecretion:false, hasPosition:true },
+  { id:'foley', name:'Foley Catheter', hasSecretion:false, hasPosition:false },
+  { id:'icd', name:'ICD (Chest Tube)', hasSecretion:true, hasPosition:true },
+  { id:'crrt', name:'CRRT / Hemodialysis Catheter', hasSecretion:false, hasPosition:true }
 ];
-const DAYS_OPTS = ['วันนี้ (Day 0)','1-3 วัน','4-7 วัน','8-14 วัน','>14 วัน'];
+const POSITION_OPTS = ['มือซ้าย','มือขวา','แขนซ้าย','แขนขวา','คอซ้าย (Left IJ)','คอขวา (Right IJ)','ขาหนีบซ้าย (Left Femoral)','ขาหนีบขวา (Right Femoral)','ทรวงอกซ้าย','ทรวงอกขวา','อื่นๆ'];
 const AMOUNT_OPTS = ['ไม่มี','เล็กน้อย','ปานกลาง','มาก'];
 const COLOR_OPTS = ['ใส','ขาว','เหลือง','เขียว','มีเลือดปน'];
 
@@ -441,6 +845,9 @@ const VENT_OTHER_CUSTOM = 'อื่นๆ (ระบุ)';
 const FIO2_OPTS = ['21%','30%','40%','50%','60%','70%','80%','90%','100%'];
 const PEEP_OPTS = ['0','5','6','8','10','12','15','18','20'];
 const PS_OPTS = ['0','5','8','10','12','15','18','20'];
+const TV_OPTS = ['300','350','400','450','500','550','600','650'];
+const TUBE_SIZE_OPTS = ['6.0','6.5','7.0','7.5','8.0','8.5','9.0'];
+const TUBE_MARK_OPTS = ['17','18','19','20','21','22','23','24','25'];
 
 const LABS_GROUPS = [
   { title:'CBC', color:'var(--ecg)', bg:'rgba(52,229,140,.15)', items:[
@@ -468,7 +875,91 @@ const LABS_GROUPS = [
 ];
 
 const DTX_INTERVALS = ['ทุก 1 ชม.','ทุก 2 ชม.','ทุก 4 ชม.','ทุก 6 ชม.','Pre-meal (ac)','Sliding Scale/PRN'];
-const FOLLOWUP_QUICK = ['ตามญาติ (Contact Relatives)','ตามหมอ (Call Doctor/Consult)','ตามแลป (Pending Lab)','ตาม OR (Follow-up Surgery)','ตาม Imaging (X-ray/CT/US)','นัด Family Meeting','อื่นๆ (ระบุ)'];
+const TASK_CATEGORIES = [
+  { id:'lab', icon:'', label:'Lab ที่ต้องตาม', items:[
+    {h:'Hematology'}, 'CBC','Hb/Hct','Reticulocyte Count','Peripheral Blood Smear',
+    {h:'Coagulation'}, 'PT','PTT','INR','Fibrinogen','D-dimer',
+    {h:'Chemistry'}, 'Electrolyte (Na/K/Cl)','Mg','Ca (Total/Ionized)','Phosphate','BUN','Creatinine','Uric Acid','Blood Sugar (DTX/FBS)','HbA1c','Ammonia (NH3)',
+    {h:'Liver Function'}, 'AST','ALT','ALP','Total/Direct Bilirubin','Albumin','Total Protein',
+    {h:'Cardiac Markers'}, 'Troponin-T/I','CK-MB','BNP/NT-proBNP',
+    {h:'Blood Gas'}, 'ABG','VBG','Lactate',
+    {h:'Infection/Inflammation'}, 'CRP','ESR','Procalcitonin (PCT)','WBC Differential',
+    {h:'Pancreatic'}, 'Amylase','Lipase',
+    {h:'Endocrine'}, 'TSH','Free T4','Cortisol',
+    {h:'Culture/Microbiology'}, 'Hemoculture x2','Sputum C/S','Urine C/S','Wound C/S','CSF Analysis','Stool Exam/C/S',
+    {h:'Urine'}, 'Urinalysis (UA)','Urine Electrolyte',
+    {h:'Drug Level'}, 'Vancomycin Trough','Digoxin Level','Phenytoin Level',
+    {h:'Serology/Infection Screen'}, 'HIV','HBsAg','Anti-HCV','VDRL','COVID Antigen/PCR'
+  ]},
+  { id:'blood', icon:'', label:'ตามเลือด (Blood Bank)', items:[
+    'PRC (Packed Red Cell)','FFP (Fresh Frozen Plasma)','Platelet Concentrate','Cryoprecipitate','Group & Screen','Crossmatch','ยืนยันหมู่เลือด (Type Confirm)'
+  ]},
+  { id:'xray', icon:'', label:'X-ray / Imaging', items:[
+    'CXR Portable','CXR Post-Procedure','CT Brain','CT Chest','CT Abdomen','MRI','Ultrasound Abdomen','Echocardiogram (Echo)','KUB'
+  ]},
+  { id:'or', icon:'', label:'OR / ห้องผ่าตัด', items:[
+    'นัดผ่าตัด (Case Scheduled)','เซ็น Consent ผ่าตัด','งดน้ำงดอาหาร (NPO) ก่อนผ่าตัด','เตรียมเลือดก่อนผ่าตัด','Pre-op Visit วิสัญญี','Post-op Care Plan'
+  ]},
+  { id:'consult', icon:'', label:'ตามหมอ / Consult', items:[
+    'Consult ศัลยกรรม','Consult อายุรกรรม','Consult ศัลยกรรมประสาท','Consult หัวใจ','Consult ไต','Consult โภชนากร','ตามหมอเจ้าของไข้'
+  ]},
+  { id:'family', icon:'', label:'Family Meeting', items:[
+    'นัด Family Meeting','แจ้งอาการญาติ','ขอ Consent หัตถการ','ญาติขอพบแพทย์'
+  ]},
+  { id:'vent', icon:'', label:'Vent Wean / Extubation Plan', items:[
+    'SBT (Spontaneous Breathing Trial)','ประเมิน Extubation','ลด PEEP/FiO2','เปลี่ยนเป็น SIMV/Spont','นัด Tracheostomy'
+  ]},
+  { id:'dialysis', icon:'', label:'Dialysis / CRRT', items:[
+    'นัด Hemodialysis','ต่อ CRRT','เปลี่ยน Dialysis Catheter','เช็ค Anticoagulation (Heparin)'
+  ]},
+  { id:'dressing', icon:'', label:'Dressing / Procedure', items:[
+    'เปลี่ยน Dressing แผล','ทำแผลกดทับ (Pressure Sore)','ICD Dressing','CVC Dressing','ตัดไหม/Remove Suture'
+  ]},
+  { id:'other', icon:'', label:'อื่นๆ', items:[] }
+];
+
+/* Tube Color Labels — Order of Draw (EBP/CLSI standard sequence) */
+const TUBE_ORDER = ['culture','lightblue','redgold','green','purple','gray','black'];
+const TUBE_LABELS = {
+  culture:'ขวดเพาะเชื้อ', lightblue:'ฟ้า', redgold:'แดง/เหลืองทอง', green:'เขียว', purple:'ม่วง', gray:'เทา', black:'ดำ'
+};
+const LAB_TUBE_MAP = {
+  // Hematology → Purple (EDTA)
+  'CBC':['purple'], 'Hb/Hct':['purple'], 'Reticulocyte Count':['purple'], 'Peripheral Blood Smear':['purple'],
+  // Coagulation → Light Blue (Sodium Citrate)
+  'PT':['lightblue'], 'PTT':['lightblue'], 'INR':['lightblue'], 'Fibrinogen':['lightblue'], 'D-dimer':['lightblue'],
+  // Chemistry → Red/Gold (Serum), except glucose (Gray) and ammonia (Green)
+  'Electrolyte (Na/K/Cl)':['redgold'], 'Mg':['redgold'], 'Ca (Total/Ionized)':['redgold'], 'Phosphate':['redgold'],
+  'BUN':['redgold'], 'Creatinine':['redgold'], 'Uric Acid':['redgold'],
+  'Blood Sugar (DTX/FBS)':['gray'], 'HbA1c':['purple'], 'Ammonia (NH3)':['green'],
+  // Liver Function → Red/Gold
+  'AST':['redgold'], 'ALT':['redgold'], 'ALP':['redgold'], 'Total/Direct Bilirubin':['redgold'], 'Albumin':['redgold'], 'Total Protein':['redgold'],
+  // Cardiac Markers → Red/Gold, except BNP (Purple/EDTA)
+  'Troponin-T/I':['redgold'], 'CK-MB':['redgold'], 'BNP/NT-proBNP':['purple'],
+  // Blood Gas → special syringe, not a color tube (no tag)
+  'ABG':[], 'VBG':[], 'Lactate':['gray'],
+  // Infection/Inflammation → Red/Gold, except ESR (Black) and WBC Diff (Purple)
+  'CRP':['redgold'], 'ESR':['black'], 'Procalcitonin (PCT)':['redgold'], 'WBC Differential':['purple'],
+  // Pancreatic → Red/Gold
+  'Amylase':['redgold'], 'Lipase':['redgold'],
+  // Endocrine → Red/Gold
+  'TSH':['redgold'], 'Free T4':['redgold'], 'Cortisol':['redgold'],
+  // Culture/Microbiology → Blood Culture Bottle (others are non-blood specimens, no tube tag)
+  'Hemoculture x2':['culture'], 'Sputum C/S':[], 'Urine C/S':[], 'Wound C/S':[], 'CSF Analysis':[], 'Stool Exam/C/S':[],
+  // Urine → non-blood, no tube tag
+  'Urinalysis (UA)':[], 'Urine Electrolyte':[],
+  // Drug Level → Red/Gold
+  'Vancomycin Trough':['redgold'], 'Digoxin Level':['redgold'], 'Phenytoin Level':['redgold'],
+  // Serology → Red/Gold, except COVID (swab, no tube)
+  'HIV':['redgold'], 'HBsAg':['redgold'], 'Anti-HCV':['redgold'], 'VDRL':['redgold'], 'COVID Antigen/PCR':[]
+};
+function getTubeOrderTag(labItems){
+  const needed = new Set();
+  labItems.forEach(item=>{ (LAB_TUBE_MAP[item]||[]).forEach(t=>needed.add(t)); });
+  if(!needed.size) return '';
+  const ordered = TUBE_ORDER.filter(t=>needed.has(t)).map(t=>TUBE_LABELS[t]);
+  return '['+ordered.join(' ➔ ')+']';
+}
 
 /* SOS Score reference data (Search Out Severity Score, PCT รพ.บ้านผือ) */
 const SOS_TEMP = [
@@ -542,7 +1033,7 @@ SHIFTS.forEach(s=>{
 /* Admit Date Calc — real calendar date, Day-of-Stay computed against today */
 function calcAdmitDate(){
   const val = document.getElementById('admitDay').value;
-  if(!val){ document.getElementById('calculatedStay').textContent='📅 วันที่ Admit: กรุณาเลือกวันที่'; state.admitDate=''; updateSlip(); return; }
+  if(!val){ document.getElementById('calculatedStay').textContent='วันที่ Admit: กรุณาเลือกวันที่'; state.admitDate=''; updateSlip(); return; }
   state.admitDate = val;
   const [y,m,d] = val.split('-').map(Number);
   const admitDateObj = new Date(y, m-1, d);
@@ -550,7 +1041,7 @@ function calcAdmitDate(){
   const todayObj = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const diffDays = Math.floor((todayObj - admitDateObj) / 86400000) + 1;
   const dateDisplay = admitDateObj.toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'numeric' });
-  document.getElementById('calculatedStay').textContent = `📅 Admit: ${dateDisplay} | Day of Stay: Day ${diffDays > 0 ? diffDays : 1}`;
+  document.getElementById('calculatedStay').textContent = `Admit: ${dateDisplay} | Day of Stay: Day ${diffDays > 0 ? diffDays : 1}`;
   updateSlip();
 }
 
@@ -576,6 +1067,115 @@ function renderOptions(containerId, items, stateKey, isMulti, customInputId, cus
   }
 }
 renderOptions('precautionsGrid', PRECAUTIONS, 'precautions', true, 'precautionsCustom', 'precautionsCustomText', 'อื่นๆ (ระบุ)');
+
+function taskCategoryCount(cat){
+  const arr = state.tasks[cat.id] || [];
+  const custom = (state.tasksCustom[cat.id] || '').trim();
+  return arr.length + (custom ? 1 : 0);
+}
+function renderTaskCategories(){
+  const container = document.getElementById('taskCategories'); container.innerHTML = '';
+  TASK_CATEGORIES.forEach(cat=>{
+    if(!state.tasks[cat.id]) state.tasks[cat.id] = [];
+    const isExpanded = !!state.taskExpanded[cat.id];
+    const count = taskCategoryCount(cat);
+
+    const wrap = document.createElement('div');
+    const header = document.createElement('div');
+    header.className = 'basket-cat' + (isExpanded ? ' expanded' : '');
+    header.innerHTML = `<div class="basket-cat-left">${cat.icon ? cat.icon+' ' : ''}${cat.label}</div>
+      <div class="basket-cat-right">${count ? `<span class="task-count-badge">${count}</span>` : ''}<span class="task-chevron${isExpanded ? ' rot' : ''}">▾</span></div>`;
+    header.onclick = ()=>{ state.taskExpanded[cat.id] = !isExpanded; renderTaskCategories(); };
+    wrap.appendChild(header);
+
+    if(cat.id === 'lab'){
+      const tubeTag = getTubeOrderTag(state.tasks.lab || []);
+      if(tubeTag){
+        const tagEl = document.createElement('div');
+        tagEl.style.cssText = 'font-size:11.5px; font-weight:700; color:#fff; background:var(--violet); padding:5px 12px; border-radius:0 0 10px 10px; margin-top:-2px; margin-bottom:6px;';
+        tagEl.textContent = 'ลำดับหลอด (Order of Draw): ' + tubeTag;
+        wrap.appendChild(tagEl);
+      }
+    }
+
+    if(isExpanded){
+      const panel = document.createElement('div'); panel.className = 'basket-panel';
+      const grid = document.createElement('div'); grid.className = 'task-item-grid';
+      cat.items.forEach(item=>{
+        if(item && item.h){
+          const h = document.createElement('div'); h.className = 'task-subheader'; h.textContent = item.h;
+          grid.appendChild(h);
+        } else {
+          const isOn = state.tasks[cat.id].includes(item);
+          const chip = document.createElement('button');
+          chip.className = 'task-item-chip' + (isOn ? ' on' : ''); chip.textContent = item; chip.type = 'x';
+          chip.onclick = ()=>{
+            const idx = state.tasks[cat.id].indexOf(item);
+            if(idx > -1) state.tasks[cat.id].splice(idx,1); else state.tasks[cat.id].push(item);
+            renderTaskCategories(); updateSlip();
+          };
+          grid.appendChild(chip);
+        }
+      });
+      if(cat.items.length) panel.appendChild(grid);
+      const input = document.createElement('input');
+      input.className = 'field-input'; input.placeholder = '+ ระบุ'+cat.label+'อื่นๆ...'; input.value = state.tasksCustom[cat.id] || '';
+      input.oninput = ()=>{ state.tasksCustom[cat.id] = input.value; renderTaskBasketSummary(); updateSlip(); };
+      panel.appendChild(input);
+      wrap.appendChild(panel);
+    }
+    container.appendChild(wrap);
+  });
+  renderTaskBasketSummary();
+}
+const TASK_PRIORITY_ORDER = ['urgent','normal','later'];
+const TASK_PRIORITY_META = {
+  urgent: { label:'ด่วน', next:'later', color:'var(--crit)' },
+  normal: { label:'ปกติ', next:'urgent', color:'var(--muted)' },
+  later:  { label:'ทำภายหลัง', next:'normal', color:'var(--faint)' }
+};
+function renderTaskBasketSummary(){
+  const box = document.getElementById('taskBasketSummary');
+  const allTags = [];
+  TASK_CATEGORIES.forEach(cat=>{
+    (state.tasks[cat.id]||[]).forEach(item=> allTags.push({catId:cat.id, label:item}));
+    const custom = (state.tasksCustom[cat.id]||'').trim();
+    if(custom) allTags.push({catId:cat.id, label:custom});
+  });
+  if(!allTags.length){ box.classList.add('hidden'); box.innerHTML=''; return; }
+  box.classList.remove('hidden');
+  // urgent items float to the top so the most important handover items are seen first
+  allTags.sort((a,b)=>{
+    const pa = state.taskPriority[a.catId+'::'+a.label] || 'normal';
+    const pb = state.taskPriority[b.catId+'::'+b.label] || 'normal';
+    return TASK_PRIORITY_ORDER.indexOf(pa) - TASK_PRIORITY_ORDER.indexOf(pb);
+  });
+  box.innerHTML = `<div class="basket-summary"><div class="field-label" style="color:var(--spo2); margin-bottom:8px;">รายการที่เลือกทั้งหมด (${allTags.length}) — แตะจุดสีเพื่อตั้งลำดับความสำคัญ</div><div id="taskSummaryTags"></div></div>`;
+  const tagsEl = document.getElementById('taskSummaryTags');
+  allTags.forEach(t=>{
+    const key = t.catId+'::'+t.label;
+    const priority = state.taskPriority[key] || 'normal';
+    const meta = TASK_PRIORITY_META[priority];
+    const tag = document.createElement('span'); tag.className = 'summary-tag';
+    if(priority === 'urgent'){ tag.style.borderColor = 'var(--crit)'; tag.style.background = 'rgba(255,90,114,.12)'; }
+    if(priority === 'later'){ tag.style.opacity = '.65'; }
+    tag.innerHTML = `<button type="button" class="priority-dot" title="ลำดับความสำคัญ: ${meta.label} (แตะเพื่อเปลี่ยน)" style="background:${meta.color};"></button>${t.label} <span class="x">✕</span>`;
+    tag.querySelector('.priority-dot').onclick = (e)=>{
+      e.stopPropagation();
+      state.taskPriority[key] = meta.next;
+      renderTaskBasketSummary(); updateSlip();
+    };
+    tag.querySelector('.x').onclick = (e)=>{
+      e.stopPropagation();
+      const idx = (state.tasks[t.catId]||[]).indexOf(t.label);
+      if(idx > -1) state.tasks[t.catId].splice(idx,1);
+      else if((state.tasksCustom[t.catId]||'').trim() === t.label) state.tasksCustom[t.catId] = '';
+      delete state.taskPriority[key];
+      renderTaskCategories(); updateSlip();
+    };
+    tagsEl.appendChild(tag);
+  });
+}
 renderOptions('mdrGrid', MDR_ORGANISMS, 'mdr', true, 'mdrCustom', 'mdrCustomText', 'อื่นๆ (ระบุ)');
 renderOptions('feedingGrid', FEEDINGS, 'feeding', false, 'feedingCustom', 'feedingCustomText', 'อื่นๆ (ระบุ)');
 
@@ -674,6 +1274,16 @@ function computeAll(){
   const actionP = document.getElementById('sosAction');
   const maxScore = 18;
   const pct = Math.min(total / maxScore, 1);
+  const summaryStatus = document.getElementById('assessSummaryStatus');
+
+  function riskBand(score){
+    if(score >= 4) return { risk:'ภาวะวิกฤต (Critical)', bg:'rgba(255,90,114,.15)', fg:'var(--crit)', ring:'var(--crit)', glow:'10px',
+      action:'⚠ Monitor ทุก 15-30 นาทีจน SOS <4, Record V/S & I/O ทุก 15-30 นาที, รายงานแพทย์ทันที, พิจารณาย้าย ICU/ER, ค้นหาสาเหตุ (Severe Sepsis/Septic Shock, Acute MI, PE ฯลฯ)' };
+    if(score >= 1) return { risk:'เฝ้าระวัง (Monitor)', bg:'rgba(242,185,74,.15)', fg:'var(--amber)', ring:'var(--amber)', glow:'6px',
+      action:'Record V/S, I/O ทุก 2-4 ชม., ประเมิน SOS Score ซ้ำทุก 4 ชม., พยาบาลพิจารณารายงานแพทย์ตามความเหมาะสม' };
+    return { risk:'ไม่มีภาวะ Shock', bg:'rgba(52,229,140,.15)', fg:'var(--ecg)', ring:'var(--ecg)', glow:'4px',
+      action:'Record V/S ตามปกติทุก 4 ชม., ประเมิน SOS Score ตามปกติ' };
+  }
 
   if(!requiredFilled){
     totalDisplay.textContent = `${total} (ยังไม่ครบ)`;
@@ -684,30 +1294,61 @@ function computeAll(){
     actionP.textContent = 'เลือกให้ครบ 5 ข้อ (Temp, BP, Pulse, Resp, Consciousness) เพื่อคำนวณ — Urine Output เลือกเพิ่มได้ถ้ามีข้อมูล';
   } else {
     totalDisplay.textContent = total; sosNum.textContent = total;
-    let risk, bg, fg, ring, glow, action;
-    if(total >= 4){ risk='ภาวะวิกฤต (Critical)'; bg='rgba(255,90,114,.15)'; fg='var(--crit)'; ring='var(--crit)'; glow='10px';
-      action = '⚠ Monitor ทุก 15-30 นาทีจน SOS <4, Record V/S & I/O ทุก 15-30 นาที, รายงานแพทย์ทันที, พิจารณาย้าย ICU/ER, ค้นหาสาเหตุ (Severe Sepsis/Septic Shock, Acute MI, PE ฯลฯ)'; }
-    else if(total >= 1){ risk='เฝ้าระวัง (Monitor)'; bg='rgba(242,185,74,.15)'; fg='var(--amber)'; ring='var(--amber)'; glow='6px';
-      action = 'Record V/S, I/O ทุก 2-4 ชม., ประเมิน SOS Score ซ้ำทุก 4 ชม., พยาบาลพิจารณารายงานแพทย์ตามความเหมาะสม'; }
-    else { risk='ไม่มีภาวะ Shock'; bg='rgba(52,229,140,.15)'; fg='var(--ecg)'; ring='var(--ecg)'; glow='4px';
-      action = 'Record V/S ตามปกติทุก 4 ชม., ประเมิน SOS Score ตามปกติ'; }
-    riskLabel.textContent = risk; riskLabel.style.background=bg; riskLabel.style.color=fg;
-    riskLabelHeader.textContent = risk; riskLabelHeader.style.color=fg;
-    gauge.style.setProperty('--pct', pct); gauge.style.setProperty('--ring-color', ring); gauge.style.setProperty('--glow', glow);
-    sosNum.style.color = fg;
-    actionP.textContent = action;
+    const b = riskBand(total);
+    riskLabel.textContent = b.risk; riskLabel.style.background=b.bg; riskLabel.style.color=b.fg;
+    riskLabelHeader.textContent = b.risk; riskLabelHeader.style.color=b.fg;
+    gauge.style.setProperty('--pct', pct); gauge.style.setProperty('--ring-color', b.ring); gauge.style.setProperty('--glow', b.glow);
+    sosNum.style.color = b.fg;
+    actionP.textContent = b.action;
+  }
+
+  // Outer summary badge: prefers manually-entered score (e.g. copied from HOSxP) over the calculator below
+  const manualRaw = document.getElementById('sosManualInput').value;
+  const manualVal = manualRaw !== '' ? parseInt(manualRaw) : null;
+  if(manualVal !== null && !isNaN(manualVal)){
+    const b = riskBand(manualVal);
+    summaryStatus.textContent = b.risk + ' (กรอกเอง)'; summaryStatus.style.background = b.bg; summaryStatus.style.color = b.fg;
+  } else if(requiredFilled){
+    const b = riskBand(total);
+    summaryStatus.textContent = b.risk; summaryStatus.style.background = b.bg; summaryStatus.style.color = b.fg;
+  } else {
+    summaryStatus.textContent = 'ยังไม่ได้คำนวณ'; summaryStatus.style.background='var(--chip)'; summaryStatus.style.color='var(--muted)';
   }
   updateSlip();
 }
 computeAll();
+function onSosManualChange(){ state.sosManual = document.getElementById('sosManualInput').value; computeAll(); }
+function toggleAssessAccordion(){
+  const body = document.getElementById('assessAccordionBody');
+  const chevron = document.getElementById('assessChevron');
+  const willOpen = body.classList.contains('hidden');
+  body.classList.toggle('hidden', !willOpen);
+  chevron.classList.toggle('rot', willOpen);
+}
 
 /* Diagnosis */
 const dxQuick = document.getElementById('dxQuick');
 DX_QUICK.forEach(d=>{
   const b = document.createElement('button'); b.className = 'chip'; b.textContent = d;
-  b.onclick = ()=>{ const i = state.dx.indexOf(d); if(i>-1) state.dx.splice(i,1); else state.dx.push(d); b.classList.toggle('on', state.dx.includes(d)); b.style.background = state.dx.includes(d)?'var(--violet)':''; updateSlip(); };
+  b.dataset.dxLabel = d.toLowerCase();
+  b.onclick = ()=>{ const i = state.dx.indexOf(d); if(i>-1) state.dx.splice(i,1); else state.dx.push(d); b.classList.toggle('on', state.dx.includes(d)); b.style.background = state.dx.includes(d)?'var(--violet)':''; filterDxQuick(document.getElementById('dxSearchInput').value); updateSlip(); };
   dxQuick.appendChild(b);
 });
+/* Real-time filter — empty search shows only already-picked Dx (declutter); typing reveals matches */
+function filterDxQuick(query){
+  const q = query.trim().toLowerCase();
+  let anyVisible = false;
+  dxQuick.querySelectorAll('.chip').forEach(b=>{
+    const label = b.dataset.dxLabel;
+    const isSelected = state.dx.includes(b.textContent);
+    const match = q ? label.includes(q) : isSelected;
+    b.classList.toggle('hidden', !match);
+    if(match) anyVisible = true;
+  });
+  document.getElementById('dxNoMatch').classList.toggle('hidden', anyVisible || !q);
+  document.getElementById('dxEmptyHint').classList.toggle('hidden', q !== '' || state.dx.length > 0);
+}
+filterDxQuick('');
 function addCustomDx(){
   const val = document.getElementById('dxCustomInput').value.trim(); if(!val) return;
   state.dxCustom.push(val); document.getElementById('dxCustomInput').value=''; renderCustomDxList(); updateSlip();
@@ -721,37 +1362,183 @@ function renderCustomDxList(){
   });
 }
 
-/* Drugs (categorized) */
-function renderDrugQuick(containerId, list, color){
-  const c = document.getElementById(containerId);
-  list.forEach(d=>{
-    const b = document.createElement('button'); b.className='chip chip-sm'; b.textContent=d; b.style.borderColor=color;
-    b.onclick = ()=>{
-      document.querySelectorAll('#drugVasoQuick .chip, #drugAtbQuick .chip, #drugOtherQuick .chip').forEach(x=>{ x.classList.remove('on'); x.style.background=''; });
-      b.classList.add('on'); b.style.background=color;
-      document.getElementById('drugName').value = d;
-      const concInput = document.getElementById('drugConc');
-      concInput.scrollIntoView({behavior:'smooth', block:'center'});
-      concInput.focus();
-    };
-    c.appendChild(b);
+/* Drugs (categorized) — compact grid of drug buttons per category.
+   Clicking a drug opens ONE shared inline panel (below all 3 grids) showing:
+   its standard dose/conc choices, the full generic Conc. list, and the Rate quick list
+   — all appended together so there's a fallback if the drug isn't in the preset map.
+   No page jump, no auto-scroll — everything happens within the same block. */
+
+/* Per-drug Concentration/Dose quick options (derived from CONC_QUICK, grouped by drug) */
+const DRUG_CONC_MAP = {
+  // Vasopressor / Inotrope
+  'Norepinephrine': ['Norepi 4mg/100ml D5W (40mcg/ml)', 'Norepi 8mg/250ml D5W (32mcg/ml)'],
+  'Epinephrine': ['Epinephrine 1mg/100ml D5W (10mcg/ml)', 'Epinephrine 1:1000 (1mg/ml)'],
+  'Vasopressin': ['Vasopressin 20u/100ml NSS (0.2u/ml)'],
+  'Phenylephrine': ['Phenylephrine 10mg/100ml NSS (100mcg/ml)', 'Phenylephrine 20mg/250ml NSS (80mcg/ml)'],
+  'Dopamine': ['Dopamine 250mg/250ml D5W (1mg/ml)'],
+  'Dobutamine': ['Dobutamine 250mg/250ml D5W (1mg/ml)'],
+  'Milrinone': ['Milrinone 20mg/100ml NSS (200mcg/ml)'],
+  // Antibiotics (ATB) / Antifungal
+  'Meropenem': ['Meropenem 1g/100ml NSS (infuse 30-60min)'],
+  'Piperacillin/Tazobactam': ['Piperacillin/Tazobactam 4.5g/100ml NSS (infuse 30min-4hr)'],
+  'Colistin': ['Colistin 150mg CBA/100ml NSS (infuse 30-60min)'],
+  'Vancomycin': ['Vancomycin 1g/250ml NSS (infuse ≥60min)'],
+  'Ceftriaxone': ['Ceftriaxone 2g/100ml NSS (infuse 30min)'],
+  'Levofloxacin': ['Levofloxacin 500mg/100ml (infuse 60min)'],
+  'Fluconazole': ['Fluconazole 400mg/200ml (infuse 60min)'],
+  'Amphotericin B': ['Amphotericin B 50mg/500ml D5W (infuse 4-6hr)'],
+  // Other Medications / Drips
+  'Propofol (Sedation)': ['Propofol 1% (10mg/ml)'],
+  'Midazolam (Sedation)': ['Midazolam 50mg/50ml NSS (1mg/ml)'],
+  'Dexmedetomidine (Sedation)': ['Dexmedetomidine 200mcg/50ml NSS (4mcg/ml)'],
+  'Fentanyl Drip': ['Fentanyl 500mcg/50ml NSS (10mcg/ml)', 'Fentanyl 1000mcg/50ml NSS (20mcg/ml)', 'Fentanyl 2500mcg/50ml NSS (50mcg/ml)'],
+  'Morphine': ['Morphine 50mg/50ml NSS (1mg/ml)'],
+  'Cisatracurium (Paralytic)': ['Cisatracurium 100mg/50ml NSS (2mg/ml)'],
+  'Regular Insulin Drip': ['Regular Insulin 50u/50ml NSS (1u/ml)'],
+  'Heparin Drip': ['Heparin 25,000u/250ml NSS (100u/ml)'],
+  'Furosemide Drip': ['Furosemide 100mg/50ml NSS (2mg/ml)'],
+  'Sodium Bicarbonate Drip': ['Sodium Bicarbonate 7.5% (50ml)'],
+  'KCl Replacement': ['KCl 20mEq/100ml NSS (0.2mEq/ml, via CVC)'],
+  'MgSO4 Replacement': ['MgSO4 2g/100ml NSS (20mg/ml)']
+};
+
+let currentDrugSelection = null; // { name, color, catId } — which drug + which category's panel is showing it
+const DRUG_PANEL_ID = { vaso:'drugVasoDoseExpand', atb:'drugAtbDoseExpand', other:'drugOtherDoseExpand' };
+const drugEntryForm = document.getElementById('drugEntryForm');
+const drugEntryHome = document.getElementById('drugEntryHome');
+
+/* Pulse the Add button whenever there's a drug name typed/picked that hasn't been
+   saved to the list yet — a visual nudge so people don't move to the next drug
+   without clicking "+ เพิ่มดริปยา / ATB" first. */
+function updateAddDrugPulse(){
+  const hasUnsaved = document.getElementById('drugName').value.trim().length > 0;
+  document.getElementById('addDrugBtn').classList.toggle('pulse', hasUnsaved);
+  document.getElementById('addDrugHint').classList.toggle('hidden', !hasUnsaved);
+}
+['drugName','drugConc','drugRate'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updateAddDrugPulse);
+});
+
+/* Compact button grid per category */
+function buildDrugChipGrid(containerId, list, color, catId){
+  const c = document.getElementById(containerId); c.innerHTML = '';
+  list.forEach(drugName=>{
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'drug-chip-btn'; btn.textContent = drugName;
+    btn.dataset.drugName = drugName;
+    btn.onclick = ()=> pickDrug(drugName, color, catId);
+    c.appendChild(btn);
   });
 }
-renderDrugQuick('drugVasoQuick', DRUG_VASO, 'var(--crit)');
-renderDrugQuick('drugAtbQuick', DRUG_ATB, 'var(--amber)');
-renderDrugQuick('drugOtherQuick', DRUG_OTHER, 'var(--spo2)');
-const rateQuick = document.getElementById('rateQuick');
-RATE_QUICK.forEach(r=>{
-  const b = document.createElement('button'); b.className='chip chip-sm'; b.textContent=r;
-  b.onclick = ()=>{ document.getElementById('drugRate').value = r; };
-  rateQuick.appendChild(b);
-});
-const concQuick = document.getElementById('concQuick');
-CONC_QUICK.forEach(cq=>{
-  const b = document.createElement('button'); b.className='chip chip-sm'; b.textContent=cq;
-  b.onclick = ()=>{ document.getElementById('drugConc').value = cq; };
-  concQuick.appendChild(b);
-});
+
+function pickDrug(drugName, color, catId){
+  document.getElementById('drugName').value = drugName;
+  currentDrugSelection = { name: drugName, color, catId };
+
+  // only one drug button highlighted at a time, across all 3 categories
+  document.querySelectorAll('.drug-chip-btn.on').forEach(b=>{ b.classList.remove('on'); b.style.background=''; });
+  document.querySelectorAll(`.drug-chip-btn[data-drug-name="${CSS.escape(drugName)}"]`).forEach(b=>{
+    b.classList.add('on'); b.style.background = color;
+  });
+
+  renderDrugDoseExpand();
+  updateAddDrugPulse();
+}
+
+/* Typed custom drug for a given category — behaves the same as clicking a listed drug,
+   just without a preset dose list (falls straight to the generic Conc./Rate choices). */
+function addCustomDrug(catId){
+  const inputId = catId === 'vaso' ? 'drugVasoCustomInput' : catId === 'atb' ? 'drugAtbCustomInput' : 'drugOtherCustomInput';
+  const color = catId === 'vaso' ? 'var(--crit)' : catId === 'atb' ? 'var(--amber)' : 'var(--spo2)';
+  const input = document.getElementById(inputId);
+  const name = input.value.trim();
+  if(!name) return;
+  document.querySelectorAll('.drug-chip-btn.on').forEach(b=>{ b.classList.remove('on'); b.style.background=''; });
+  document.getElementById('drugName').value = name;
+  currentDrugSelection = { name, color, catId };
+  input.value = '';
+  renderDrugDoseExpand();
+  updateAddDrugPulse();
+}
+
+/* Renders directly under the category the selected drug belongs to (not a shared panel
+   at the bottom) — so it's always right next to the grid the person just clicked.
+   The Name/Conc/Rate inputs + Add button (#drugEntryForm) are a single real DOM node
+   that gets MOVED into the open panel (not duplicated), so there's only ever one set
+   of fields and one Add button, wherever they're currently needed.
+   If the drug has its own preset dose list, show ONLY that (no generic clutter);
+   the full generic Conc. list only appears as a fallback when there's no preset for it.
+   Rate is always shown since every drug needs one and it has no per-drug preset. */
+function renderDrugDoseExpand(){
+  // park the entry form back home FIRST so clearing panel innerHTML below doesn't delete it
+  drugEntryHome.appendChild(drugEntryForm);
+
+  // clear/close all three panels first, then populate only the relevant one
+  Object.values(DRUG_PANEL_ID).forEach(id=>{
+    const el = document.getElementById(id);
+    el.classList.remove('open'); el.innerHTML = '';
+  });
+  if(!currentDrugSelection) return;
+
+  const { name, color, catId } = currentDrugSelection;
+  const box = document.getElementById(DRUG_PANEL_ID[catId]);
+  const specific = DRUG_CONC_MAP[name] || [];
+
+  const chipRow = (items, onClickFn, currentVal)=>{
+    const wrap = document.createElement('div'); wrap.className = 'flex flex-wrap gap-1.5';
+    items.forEach(val=>{
+      const b = document.createElement('button'); b.type='button'; b.className = 'chip chip-sm';
+      if(currentVal && currentVal === val){ b.classList.add('on'); b.style.background = color; }
+      b.textContent = val;
+      b.onclick = ()=>{ onClickFn(val); renderDrugDoseExpand(); };
+      wrap.appendChild(b);
+    });
+    return wrap;
+  };
+
+  const title = document.createElement('div'); title.className = 'dose-expand-title';
+  title.innerHTML = `<b>${name}</b>`;
+  const closeBtn = document.createElement('span'); closeBtn.className = 'dose-expand-close'; closeBtn.textContent = 'ปิด ✕';
+  closeBtn.onclick = ()=>{ currentDrugSelection = null; renderDrugDoseExpand(); updateAddDrugPulse(); };
+  title.appendChild(closeBtn);
+  box.appendChild(title);
+
+  const concVal = document.getElementById('drugConc').value.trim();
+  const rateVal = document.getElementById('drugRate').value.trim();
+
+  if(specific.length){
+    const lbl = document.createElement('div'); lbl.className = 'dose-expand-group-label'; lbl.textContent = `Dose/Conc. มาตรฐานของ ${name}`;
+    box.appendChild(lbl);
+    box.appendChild(chipRow(specific, v=> document.getElementById('drugConc').value = v, concVal));
+  } else {
+    // no preset for this drug — fall back to the full generic Conc. list
+    const lbl2 = document.createElement('div'); lbl2.className = 'dose-expand-group-label'; lbl2.textContent = 'Conc. อื่นๆ (ทั้งหมด)';
+    box.appendChild(lbl2);
+    box.appendChild(chipRow(CONC_QUICK, v=> document.getElementById('drugConc').value = v, concVal));
+  }
+
+  const lbl3 = document.createElement('div'); lbl3.className = 'dose-expand-group-label'; lbl3.textContent = 'Rate ที่ใช้บ่อย';
+  box.appendChild(lbl3);
+  box.appendChild(chipRow(RATE_QUICK, v=> document.getElementById('drugRate').value = v, rateVal));
+
+  // now move the real Name/Conc/Rate/Add-button form into this panel, right after the choices
+  box.appendChild(drugEntryForm);
+  updateAddDrugPulse();
+
+  box.classList.add('open');
+}
+
+function clearDrugSelectionUI(){
+  currentDrugSelection = null;
+  document.querySelectorAll('.drug-chip-btn.on').forEach(b=>{ b.classList.remove('on'); b.style.background=''; });
+  renderDrugDoseExpand();
+  updateAddDrugPulse();
+}
+
+buildDrugChipGrid('drugVasoQuick', DRUG_VASO, 'var(--crit)', 'vaso');
+buildDrugChipGrid('drugAtbQuick', DRUG_ATB, 'var(--amber)', 'atb');
+buildDrugChipGrid('drugOtherQuick', DRUG_OTHER, 'var(--spo2)', 'other');
+
 function addDrug(){
   const name = document.getElementById('drugName').value.trim();
   const conc = document.getElementById('drugConc').value.trim();
@@ -759,7 +1546,7 @@ function addDrug(){
   if(!name) return;
   state.drugs.push({name, conc, rate});
   document.getElementById('drugName').value=''; document.getElementById('drugConc').value=''; document.getElementById('drugRate').value='';
-  document.querySelectorAll('#drugVasoQuick .chip, #drugAtbQuick .chip, #drugOtherQuick .chip').forEach(x=>{ x.classList.remove('on'); x.style.background=''; });
+  clearDrugSelectionUI();
   renderDrugList(); updateSlip();
 }
 function renderDrugList(){
@@ -771,7 +1558,111 @@ function renderDrugList(){
     rm.onclick = ()=>{ state.drugs.splice(idx,1); renderDrugList(); updateSlip(); };
     row.appendChild(rm); c.appendChild(row);
   });
+  renderIvDripsSummary();
 }
+
+/* IV Fluids & Drips Handover (Assessment section) */
+const ivPicker = { type:'', typeCustom:'', bag:'', rate:'' };
+function renderIvPickerGrid(containerId, items, key){
+  const c = document.getElementById(containerId); c.innerHTML='';
+  items.forEach(item=>{
+    const isOn = ivPicker[key] === item;
+    const b = document.createElement('button'); b.className='chip chip-sm'+(isOn?' on':''); b.style.background=isOn?'var(--spo2)':''; b.textContent=item;
+    b.onclick = ()=>{
+      ivPicker[key] = isOn ? '' : item;
+      renderIvPickerGrid(containerId, items, key);
+      toggleIvTypeCustom();
+      // convenience: picking a bag size pre-fills "remaining" with a full bag — still directly editable
+      if(key === 'bag' && !isOn){
+        const remainingInput = document.getElementById('ivRemaining');
+        if(remainingInput && !remainingInput.value) remainingInput.value = item;
+      }
+    };
+    c.appendChild(b);
+  });
+}
+function toggleIvTypeCustom(){
+  let customInput = document.getElementById('ivTypeCustom');
+  if(ivPicker.type === 'อื่นๆ (ระบุ)'){
+    if(!customInput){
+      customInput = document.createElement('input'); customInput.id='ivTypeCustom'; customInput.className='field-input mt-2'; customInput.placeholder='ระบุชนิดสารน้ำ...';
+      customInput.oninput = ()=>{ ivPicker.typeCustom = customInput.value; };
+      document.getElementById('ivFluidTypeGrid').insertAdjacentElement('afterend', customInput);
+    }
+  } else if(customInput){ customInput.remove(); }
+}
+renderIvPickerGrid('ivFluidTypeGrid', IV_FLUID_TYPES, 'type');
+renderIvPickerGrid('ivBagSizeGrid', IV_BAG_SIZES, 'bag');
+renderIvPickerGrid('ivRateGrid', IV_RATE_OPTS, 'rate');
+
+function addIvFluid(){
+  const type = ivPicker.type === 'อื่นๆ (ระบุ)' ? (ivPicker.typeCustom.trim() || 'อื่นๆ') : ivPicker.type;
+  const bag = parseFloat(ivPicker.bag);
+  const rate = parseFloat(ivPicker.rate);
+  const remainingVal = document.getElementById('ivRemaining').value;
+  const remaining = parseFloat(remainingVal);
+  if(!type || !bag || !rate || remainingVal === '' || isNaN(remaining)){ alert('กรุณาเลือกชนิดสารน้ำ, ขนาดถุง, Rate และกรอกสารน้ำคงเหลือ ให้ครบก่อนเพิ่ม'); return; }
+  state.ivFluids.push({ id: Date.now(), type, bag, rate, remaining });
+  ivPicker.type=''; ivPicker.typeCustom=''; ivPicker.bag=''; ivPicker.rate='';
+  renderIvPickerGrid('ivFluidTypeGrid', IV_FLUID_TYPES, 'type');
+  renderIvPickerGrid('ivBagSizeGrid', IV_BAG_SIZES, 'bag');
+  renderIvPickerGrid('ivRateGrid', IV_RATE_OPTS, 'rate');
+  toggleIvTypeCustom();
+  document.getElementById('ivRemaining').value = '';
+  renderIvFluidList(); updateSlip();
+}
+/* Remaining volume is entered directly by the nurse (not back-calculated from a start time —
+   simpler and more reliable at the bedside). We only derive a rough "runs out at" ETA from it. */
+function ivEta(item){
+  const etaHr = item.rate > 0 ? item.remaining / item.rate : 0;
+  const etaTime = new Date(Date.now() + etaHr*3600000);
+  const etaStr = etaTime.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+  return { etaHr, etaStr, empty: item.remaining <= 0 };
+}
+function renderIvFluidList(){
+  const c = document.getElementById('ivFluidList'); c.innerHTML='';
+  state.ivFluids.forEach((item, idx)=>{
+    const calc = ivEta(item);
+    const row = document.createElement('div'); row.className='p-3 rounded-xl text-sm'; row.style.background = calc.empty ? 'rgba(255,90,114,.1)' : 'var(--panel2)'; row.style.border = '1px solid '+(calc.empty ? 'var(--crit)' : 'var(--line)');
+    const hrs = Math.floor(calc.etaHr); const mins = Math.round((calc.etaHr - hrs)*60);
+    row.innerHTML = `
+      <div class="flex justify-between items-start gap-2 mb-1.5">
+        <b style="color:var(--ink); font-size:14px;">${item.type}</b>
+        <button data-rm="${idx}" class="font-bold" style="color:var(--crit);">✕</button>
+      </div>
+      <div class="flex items-baseline gap-1.5">
+        <span style="color:var(--muted); font-size:12.5px;">สารน้ำคงเหลือ</span>
+        <input data-remaining="${idx}" type="number" inputmode="numeric" class="mono font-bold text-2xl" value="${item.remaining}"
+          style="width:100px; background:transparent; border:none; border-bottom:2px solid ${calc.empty?'var(--crit)':'var(--spo2)'}; color:${calc.empty ? 'var(--crit)' : 'var(--spo2)'}; outline:none;" />
+        <span style="color:var(--muted); font-size:12.5px;">ml</span>
+      </div>
+      <div class="text-xs mt-1" style="color:var(--muted);">
+        จากถุง ${item.bag} ml @ ${item.rate} ml/hr
+        ${!calc.empty ? `<br/>คาดว่าจะหมดอีก ${hrs} ชม. ${mins} นาที (ประมาณ ${calc.etaStr} น. หากอัตราคงเดิม)` : ' — หมดแล้ว ควรเปลี่ยนถุงใหม่'}
+      </div>
+    `;
+    row.querySelector('[data-rm]').onclick = ()=>{ state.ivFluids.splice(idx,1); renderIvFluidList(); updateSlip(); };
+    row.querySelector('[data-remaining]').oninput = (e)=>{ item.remaining = parseFloat(e.target.value)||0; renderIvFluidList(); updateSlip(); };
+    c.appendChild(row);
+  });
+}
+function renderIvDripsSummary(){
+  const box = document.getElementById('ivDripsSummary');
+  if(!state.drugs.length){ box.innerHTML = '<p class="note">ยังไม่มีดริปยา — เพิ่มได้ที่หมวด Background</p>'; return; }
+  const groups = { vaso:[], atb:[], other:[] };
+  state.drugs.forEach(d=>{
+    if(DRUG_VASO.includes(d.name)) groups.vaso.push(d.name);
+    else if(DRUG_ATB.includes(d.name)) groups.atb.push(d.name);
+    else groups.other.push(d.name);
+  });
+  const parts = [];
+  if(groups.vaso.length) parts.push(`<span class="chip chip-sm" style="border-color:var(--crit); color:var(--crit);">Vasopressor: ${groups.vaso.join(', ')}</span>`);
+  if(groups.atb.length) parts.push(`<span class="chip chip-sm" style="border-color:var(--amber); color:var(--amber);">ATB: ${groups.atb.join(', ')}</span>`);
+  if(groups.other.length) parts.push(`<span class="chip chip-sm" style="border-color:var(--spo2); color:var(--spo2);">Other: ${groups.other.join(', ')}</span>`);
+  box.innerHTML = `<div class="flex flex-wrap gap-1.5">${parts.join('')}</div>`;
+}
+renderIvFluidList();
+renderIvDripsSummary();
 
 /* Ventilator (choice-based, conditional sub-params) */
 function renderVentGroup(containerId, items, key){
@@ -829,21 +1720,17 @@ renderVentSubModeGrid();
 renderVentGroup('ventFio2Grid', FIO2_OPTS, 'fio2');
 renderVentGroup('ventPeepGrid', PEEP_OPTS, 'peep');
 renderVentGroup('ventPsGrid', PS_OPTS, 'ps');
+renderVentGroup('ventTvGrid', TV_OPTS, 'tv');
+renderVentGroup('ventTubeSizeGrid', TUBE_SIZE_OPTS, 'tubeSize');
+renderVentGroup('ventTubeMarkGrid', TUBE_MARK_OPTS, 'tubeMark');
 updateVentVisibility();
 function effectivePeep(){ return (state.vent.peepCustom||'').trim() || state.vent.peep; }
 function effectivePs(){ return (state.vent.psCustom||'').trim() || state.vent.ps; }
+function effectiveTv(){ return (state.vent.tvCustom||'').trim() || state.vent.tv; }
+function effectiveTubeSize(){ return (state.vent.tubeSizeCustom||'').trim() || state.vent.tubeSize; }
+function effectiveTubeMark(){ return (state.vent.tubeMarkCustom||'').trim() || state.vent.tubeMark; }
 
 /* Lines & Tubes */
-const linesGrid = document.getElementById('linesGrid');
-LINES_DEF.forEach(l=>{
-  const b = document.createElement('button'); b.className='chip'; b.textContent=l.name;
-  b.onclick = ()=>{
-    if(!state.lines[l.id]) { state.lines[l.id] = { days:'', amount:'', color:'', note:'' }; } else { delete state.lines[l.id]; }
-    b.classList.toggle('on', !!state.lines[l.id]); b.style.background = state.lines[l.id]?'var(--spo2)':'';
-    renderLinesDetail(); updateSlip();
-  };
-  linesGrid.appendChild(b);
-});
 function miniChoice(items, current, onPick){
   const wrap = document.createElement('div'); wrap.className='flex flex-wrap gap-1';
   items.forEach(item=>{
@@ -855,26 +1742,41 @@ function miniChoice(items, current, onPick){
   });
   return wrap;
 }
-function renderLinesDetail(){
-  const c = document.getElementById('linesDetailArea'); c.innerHTML='';
-  Object.keys(state.lines).forEach(id=>{
-    const def = LINES_DEF.find(x=>x.id===id); const ld = state.lines[id];
-    const wrap = document.createElement('div'); wrap.className='p-3 rounded-xl space-y-2'; wrap.style.background='var(--panel2)'; wrap.style.border='1px solid var(--line)';
-    const title = document.createElement('div'); title.className='font-semibold text-xs text-slate-200'; title.textContent='📌 '+def.name; wrap.appendChild(title);
-    const daysLabel = document.createElement('div'); daysLabel.className='subgroup-label'; daysLabel.textContent='ระยะเวลาที่ใส่'; wrap.appendChild(daysLabel);
-    wrap.appendChild(miniChoice(DAYS_OPTS, ld.days, (val)=>{ ld.days = val; renderLinesDetail(); updateSlip(); }));
-    if(def.hasSecretion){
-      const amtLabel = document.createElement('div'); amtLabel.className='subgroup-label'; amtLabel.textContent='ปริมาณ Secretion'; wrap.appendChild(amtLabel);
-      wrap.appendChild(miniChoice(AMOUNT_OPTS, ld.amount, (val)=>{ ld.amount = val; renderLinesDetail(); updateSlip(); }));
-      const colorLabel = document.createElement('div'); colorLabel.className='subgroup-label'; colorLabel.textContent='สี / ลักษณะ'; wrap.appendChild(colorLabel);
-      wrap.appendChild(miniChoice(COLOR_OPTS, ld.color, (val)=>{ ld.color = val; renderLinesDetail(); updateSlip(); }));
+function renderLinesGrid(){
+  const linesGrid = document.getElementById('linesGrid'); linesGrid.innerHTML = '';
+  LINES_DEF.forEach(l=>{
+    const isActive = !!state.lines[l.id];
+    const itemWrap = document.createElement('div');
+
+    const b = document.createElement('button'); b.className='chip'+(isActive?' on':''); b.style.background = isActive ? 'var(--spo2)' : ''; b.textContent = l.name;
+    b.onclick = ()=>{
+      if(!state.lines[l.id]) { state.lines[l.id] = { position:'', amount:'', color:'', note:'' }; } else { delete state.lines[l.id]; }
+      renderLinesGrid(); updateSlip();
+    };
+    itemWrap.appendChild(b);
+
+    if(isActive){
+      const ld = state.lines[l.id];
+      const wrap = document.createElement('div'); wrap.className='p-3 rounded-xl space-y-2 mt-1'; wrap.style.background='var(--panel2)'; wrap.style.border='1px solid var(--line)';
+      if(l.hasPosition){
+        const posLabel = document.createElement('div'); posLabel.className='subgroup-label'; posLabel.textContent='ตำแหน่งที่ใส่'; wrap.appendChild(posLabel);
+        wrap.appendChild(miniChoice(POSITION_OPTS, ld.position, (val)=>{ ld.position = val; renderLinesGrid(); updateSlip(); }));
+      }
+      if(l.hasSecretion){
+        const amtLabel = document.createElement('div'); amtLabel.className='subgroup-label'; amtLabel.textContent='ปริมาณ Secretion'; wrap.appendChild(amtLabel);
+        wrap.appendChild(miniChoice(AMOUNT_OPTS, ld.amount, (val)=>{ ld.amount = val; renderLinesGrid(); updateSlip(); }));
+        const colorLabel = document.createElement('div'); colorLabel.className='subgroup-label'; colorLabel.textContent='สี / ลักษณะ'; wrap.appendChild(colorLabel);
+        wrap.appendChild(miniChoice(COLOR_OPTS, ld.color, (val)=>{ ld.color = val; renderLinesGrid(); updateSlip(); }));
+      }
+      const noteInput = document.createElement('input'); noteInput.className='field-input text-xs'; noteInput.placeholder='หมายเหตุเพิ่มเติมของสายนี้ (พิมพ์เพิ่มได้เสมอ)'; noteInput.value = ld.note || '';
+      noteInput.oninput = ()=>{ ld.note = noteInput.value; updateSlip(); };
+      wrap.appendChild(noteInput);
+      itemWrap.appendChild(wrap);
     }
-    const noteInput = document.createElement('input'); noteInput.className='field-input text-xs'; noteInput.placeholder='หมายเหตุเพิ่มเติมของสายนี้ (พิมพ์เพิ่มได้เสมอ)'; noteInput.value = ld.note || '';
-    noteInput.oninput = ()=>{ ld.note = noteInput.value; updateSlip(); };
-    wrap.appendChild(noteInput);
-    c.appendChild(wrap);
+    linesGrid.appendChild(itemWrap);
   });
 }
+renderLinesGrid();
 
 /* Intake / Output Net Balance */
 function updateNetBalance(){
@@ -902,24 +1804,6 @@ function renderDtxIntervalGrid(){
     b.classList.toggle('on', isOn); b.style.background = isOn?'var(--amber)':'';
   });
 }
-function addDtxReading(){
-  const time = document.getElementById('dtxTime').value.trim();
-  const val = document.getElementById('dtxValue').value.trim();
-  if(!val) return;
-  state.dtx.readings.push({time, val});
-  document.getElementById('dtxTime').value=''; document.getElementById('dtxValue').value='';
-  renderDtxReadings(); updateSlip();
-}
-function renderDtxReadings(){
-  const c = document.getElementById('dtxList'); c.innerHTML='';
-  state.dtx.readings.forEach((r,idx)=>{
-    const row = document.createElement('div'); row.className='flex justify-between items-center p-2 rounded-lg text-sm'; row.style.background='var(--panel2)'; row.style.border='1px solid var(--line)';
-    row.innerHTML=`<span class="text-slate-200">${r.time?('<b>'+r.time+'</b> — '):''}${r.val} mg/dL</span>`;
-    const rm = document.createElement('button'); rm.textContent='✕'; rm.className='font-bold'; rm.style.color='var(--crit)';
-    rm.onclick = ()=>{ state.dtx.readings.splice(idx,1); renderDtxReadings(); updateSlip(); };
-    row.appendChild(rm); c.appendChild(row);
-  });
-}
 
 /* Labs — grouped & color-coded */
 const labsGroupsContainer = document.getElementById('labsGroupsContainer');
@@ -940,7 +1824,7 @@ LABS_GROUPS.forEach(group=>{
 });
 
 /* Follow-up / Pending Tasks */
-renderOptions('followupGrid', FOLLOWUP_QUICK, 'followup', true, 'followupCustom', 'followupCustomText', 'อื่นๆ (ระบุ)');
+renderTaskCategories();
 
 /* Theme toggle */
 function toggleTheme(){
@@ -948,6 +1832,30 @@ function toggleTheme(){
   const isLight = html.getAttribute('data-theme') === 'light';
   html.setAttribute('data-theme', isLight ? 'dark' : 'light');
   document.getElementById('themeToggle').textContent = isLight ? 'Mode 🌙' : 'Mode 🌤️';
+}
+
+/* Sidebar: expand/collapse + focus mode (dim every section except the one picked) */
+let focusedSection = null;
+function toggleSidebar(force){
+  const sb = document.getElementById('appSidebar');
+  const expand = typeof force === 'boolean' ? force : !sb.classList.contains('expanded');
+  sb.classList.toggle('expanded', expand);
+  document.getElementById('sidebarBackdrop').classList.toggle('hidden', !expand);
+}
+function focusSection(key){
+  focusedSection = (focusedSection === key) ? null : key;
+  document.querySelectorAll('[data-section]').forEach(el=>{
+    el.classList.toggle('dimmed-section', !!focusedSection && el.dataset.section !== focusedSection);
+  });
+  document.querySelectorAll('.sidebar-item[data-nav]').forEach(b=>{
+    b.classList.toggle('active', b.dataset.nav === focusedSection);
+  });
+  document.getElementById('sidebarClearFocus').classList.toggle('hidden', !focusedSection);
+  if(focusedSection){
+    const target = document.querySelector(`[data-section="${focusedSection}"]`);
+    if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  toggleSidebar(false); // collapse the flyout back after picking a section
 }
 
 /* Search Filter */
@@ -960,6 +1868,24 @@ function filterKeywords(query){
 }
 
 /* Slip Text Generation */
+/* ---------------- Thermal-slip global filter ----------------
+   Every optional field/checklist item in the form should vanish from the printed
+   slip automatically when it has no active/checked data — no "-" placeholders,
+   no empty section headers. `sectionLines` is the reusable rule for that:
+   each builder returns '' (skip), a string (one line), or string[] (multiple lines);
+   if a whole section ends up with zero lines, its header + divider are dropped too. */
+function sectionLines(title, builders){
+  const lines = [];
+  builders.forEach(fn=>{
+    const out = fn();
+    if(!out) return;
+    if(Array.isArray(out)) lines.push(...out.filter(Boolean));
+    else lines.push(out);
+  });
+  if(!lines.length) return [];
+  return ['['+title+']', ...lines];
+}
+
 function buildSlipText(hideName){
   const W = 32; const L = [];
   L.push('=== ICU SMART HANDOVER (SBAR) ===');
@@ -970,32 +1896,45 @@ function buildSlipText(hideName){
   L.push('• ผู้บันทึก: '+(state.recordedBy||'-'));
   L.push('-'.repeat(W));
 
-  L.push('[S: Situation & Safety]');
   const precList = [...state.precautions.filter(p=>p!=='อื่นๆ (ระบุ)'), ...(state.precautions.includes('อื่นๆ (ระบุ)') && state.precautionsCustomText ? [state.precautionsCustomText] : [])];
-  L.push('Precautions: '+(precList.join(', ')||'-'));
   const mdrList = [...state.mdr.filter(m=>m!=='อื่นๆ (ระบุ)'), ...(state.mdr.includes('อื่นๆ (ระบุ)') && state.mdrCustomText ? [state.mdrCustomText] : [])];
-  if(mdrList.length) L.push('MDR Organism: '+mdrList.join(', '));
   const feedingDisp = state.feeding === 'อื่นๆ (ระบุ)' ? (state.feedingCustomText||'อื่นๆ') : state.feeding;
-  L.push('Feeding/NPO: '+(feedingDisp||'-'));
-  L.push('Shift Goal: '+(document.getElementById('shiftGoal').value||'-'));
-  L.push('-'.repeat(W));
+  const sBlock = sectionLines('S: Situation & Safety', [
+    ()=> state.chiefComplaint ? 'Chief Complaint: '+state.chiefComplaint : '',
+    ()=> precList.length ? 'Precautions: '+precList.join(', ') : '',
+    ()=> mdrList.length ? 'MDR Organism: '+mdrList.join(', ') : '',
+    ()=> feedingDisp ? 'Feeding/NPO: '+feedingDisp : '',
+    ()=> document.getElementById('shiftGoal').value ? 'Shift Goal: '+document.getElementById('shiftGoal').value : ''
+  ]);
+  if(sBlock.length){ L.push(...sBlock); L.push('-'.repeat(W)); }
 
-  L.push('[B: Background & Drips/ATB]');
   const allDx = [...state.dx, ...state.dxCustom];
-  L.push('Dx: '+(allDx.join(', ')||'-'));
-  if(state.drugs.length){ state.drugs.forEach(d=>L.push(`- ${d.name} (${d.conc||''}, Rate: ${d.rate||''})`)); } else { L.push('- ไม่มีดริปยาพิเศษ'); }
-  L.push('-'.repeat(W));
+  const bBlock = sectionLines('B: Background & Drips/ATB', [
+    ()=> allDx.length ? 'Dx: '+allDx.join(', ') : '',
+    ()=> (state.dtxRange.min || state.dtxRange.max) ? 'DTX Range: '+(state.dtxRange.min||'-')+' - '+(state.dtxRange.max||'-')+' mg/dL' : '',
+    ()=> state.drugs.length ? state.drugs.map(d=>`- ${d.name} (${d.conc||''}, Rate: ${d.rate||''})`) : ''
+  ]);
+  if(bBlock.length){ L.push(...bBlock); L.push('-'.repeat(W)); }
 
-  L.push('[A: Assessment — GCS & SOS Score]');
   const gcsStr = buildGcsStrings();
-  L.push(`GCS: ${gcsStr.breakdown} (Total: ${gcsStr.total})`);
-  L.push(`SOS: T[${state.sos.temp?state.sos.temp.label:'-'}] BP[${state.sos.bp?state.sos.bp.label:'-'}] P[${state.sos.pulse?state.sos.pulse.label:'-'}] R[${state.sos.resp?state.sos.resp.label:'-'}]`);
-  L.push(`     Conscious[${state.sos.conscious?state.sos.conscious.label:'-'}] Urine[${state.sos.urine?state.sos.urine.label+' '+state.sos.urineInterval:'ไม่รวม'}]`);
-  L.push(`SOS Score รวม: ${document.getElementById('sosTotalDisplay').textContent} — ${document.getElementById('sosRiskLabel').textContent}`);
-  if(document.getElementById('assessNote').value) L.push('Note: '+document.getElementById('assessNote').value);
-  L.push('-'.repeat(W));
+  const manualRaw = document.getElementById('sosManualInput').value;
+  const aBlock = sectionLines('A: Assessment — GCS & SOS Score', [
+    ()=> `GCS: ${gcsStr.breakdown} (Total: ${gcsStr.total})`, // core vital — always charted, not an optional checklist item
+    ()=> manualRaw !== ''
+      ? `SOS Score: ${manualRaw} / 18 — ${document.getElementById('assessSummaryStatus').textContent}`
+      : (state.sos.temp||state.sos.bp||state.sos.pulse||state.sos.resp||state.sos.conscious||state.sos.urine ? [
+          `SOS: T[${state.sos.temp?state.sos.temp.label:'-'}] BP[${state.sos.bp?state.sos.bp.label:'-'}] P[${state.sos.pulse?state.sos.pulse.label:'-'}] R[${state.sos.resp?state.sos.resp.label:'-'}]`,
+          `     Conscious[${state.sos.conscious?state.sos.conscious.label:'-'}] Urine[${state.sos.urine?state.sos.urine.label+' '+state.sos.urineInterval:'ไม่รวม'}]`,
+          `SOS Score รวม: ${document.getElementById('sosTotalDisplay').textContent} — ${document.getElementById('sosRiskLabel').textContent}`
+        ] : ''),
+    ()=> document.getElementById('assessNote').value ? 'Note: '+document.getElementById('assessNote').value : '',
+    ()=> state.ivFluids.length ? ['IV Fluids:', ...state.ivFluids.map(item=>{
+          const calc = ivEta(item);
+          return ` * ${item.type} — สารน้ำคงเหลือ ${calc.empty?'หมดแล้ว (เปลี่ยนถุงใหม่)':item.remaining+'ml'} (จากถุง ${item.bag}ml @ ${item.rate}ml/hr${calc.empty?'':', คาดหมด '+calc.etaStr+' น.'})`;
+        })] : ''
+  ]);
+  if(aBlock.length){ L.push(...aBlock); L.push('-'.repeat(W)); }
 
-  L.push('[R: Recommendation & Plan]');
   const ventParts = [];
   const modeLabel = state.vent.mode === VENT_OTHER_CUSTOM ? (state.vent.mainModeCustomText||'อื่นๆ') : state.vent.mode;
   if(modeLabel) ventParts.push('Mode '+modeLabel+(state.vent.subMode ? ' / '+state.vent.subMode : ''));
@@ -1005,63 +1944,111 @@ function buildSlipText(hideName){
   if(VENT_MAIN_SPLIT.includes(state.vent.mode) || VENT_MAIN_OTHER.includes(state.vent.mode)){
     const peepV = effectivePeep(); if(peepV) ventParts.push('PEEP '+peepV);
     const psV = effectivePs(); if(psV) ventParts.push('PS '+psV);
+    const tvV = effectiveTv(); if(tvV) ventParts.push('Tv '+tvV+'ml');
+    const tubeSizeV = effectiveTubeSize(); if(tubeSizeV) ventParts.push('Tube '+tubeSizeV+'mm');
+    const tubeMarkV = effectiveTubeMark(); if(tubeMarkV) ventParts.push('Mark '+tubeMarkV+'cm');
   }
   const ventExtra = document.getElementById('ventExtra').value;
   if(ventExtra) ventParts.push(ventExtra);
-  L.push('Ventilator: '+(ventParts.join(', ')||'-'));
-
-  const inV = state.io.intake || '-', outV = state.io.output || '-';
-  L.push(`I/O 8hr: Intake ${inV} ml / Output ${outV} ml (Net: ${document.getElementById('netBalanceDisplay').textContent})`);
-
-  if(state.dtx.interval || state.dtx.readings.length){
-    let dtxLine = 'DTX'+(state.dtx.interval?(' ('+state.dtx.interval+')'):'')+': ';
-    dtxLine += state.dtx.readings.length ? state.dtx.readings.map(r=>(r.time?r.time+'=':'')+r.val).join(', ')+' mg/dL' : '-';
-    L.push(dtxLine);
-  }
 
   const labVals = [];
   LABS_GROUPS.forEach(group=>{
     const parts = group.items.filter(l=>state.labs[l.key]).map(l=>l.key+' '+state.labs[l.key]);
     if(parts.length) labVals.push(`${group.title}: ${parts.join(', ')}`);
   });
-  if(labVals.length){ L.push('Labs:'); labVals.forEach(v=>L.push(' * '+v)); }
-  L.push('Blood Bank/Other: '+(document.getElementById('bloodBankInfo').value||'-'));
 
-  if(Object.keys(state.lines).length){
-    L.push('Lines/Tubes:');
-    Object.keys(state.lines).forEach(id=>{
-      const def = LINES_DEF.find(x=>x.id===id); const ld = state.lines[id]; const parts = [];
-      if(ld.days) parts.push('ใส่ '+ld.days);
-      if(ld.amount) parts.push('Secretion: '+ld.amount);
-      if(ld.color) parts.push(ld.color);
-      if(ld.note) parts.push(ld.note);
-      L.push(` * ${def.name} [${parts.join(' | ')||'ยังไม่ระบุรายละเอียด'}]`);
-    });
-  }
+  const rBlock = sectionLines('R: Recommendation & Plan', [
+    ()=> ventParts.length ? 'Ventilator: '+ventParts.join(', ') : '',
+    ()=> (state.io.intake || state.io.output) ? `I/O 8hr: Intake ${state.io.intake||'-'} ml / Output ${state.io.output||'-'} ml (Net: ${document.getElementById('netBalanceDisplay').textContent})` : '',
+    ()=> {
+      if(!state.dtx.interval && !state.dtx.min && !state.dtx.max) return '';
+      let dtxLine = 'DTX'+(state.dtx.interval?(' ('+state.dtx.interval+')'):'')+': ';
+      dtxLine += (state.dtx.min || state.dtx.max) ? (state.dtx.min||'-')+' - '+(state.dtx.max||'-')+' mg/dL' : '-';
+      return dtxLine;
+    },
+    ()=> labVals.length ? ['Labs:', ...labVals.map(v=>' * '+v)] : '',
+    ()=> document.getElementById('bloodBankInfo').value ? 'Blood Bank/Other: '+document.getElementById('bloodBankInfo').value : '',
+    ()=> {
+      const ids = Object.keys(state.lines);
+      if(!ids.length) return '';
+      return ['Lines/Tubes:', ...ids.map(id=>{
+        const def = LINES_DEF.find(x=>x.id===id); const ld = state.lines[id]; const parts = [];
+        if(ld.position) parts.push('ตำแหน่ง: '+ld.position);
+        if(ld.amount) parts.push('Secretion: '+ld.amount);
+        if(ld.color) parts.push(ld.color);
+        if(ld.note) parts.push(ld.note);
+        return ` * ${def.name} [${parts.join(' | ')||'ยังไม่ระบุรายละเอียด'}]`;
+      })];
+    }
+  ]);
+  if(rBlock.length){ L.push(...rBlock); L.push('-'.repeat(W)); }
 
-  const followList = [...state.followup.filter(f=>f!=='อื่นๆ (ระบุ)'), ...(state.followup.includes('อื่นๆ (ระบุ)') && state.followupCustomText ? [state.followupCustomText] : [])];
   const freeNoteVal = document.getElementById('freeNote').value;
-  if(followList.length || freeNoteVal){
-    L.push('-'.repeat(W));
+  const urgentTags = [];
+  const taskLines = [];
+  TASK_CATEGORIES.forEach(cat=>{
+    const items = [...(state.tasks[cat.id]||[])];
+    const custom = (state.tasksCustom[cat.id]||'').trim();
+    if(custom) items.push(custom);
+    items.forEach(item=>{ if(state.taskPriority[cat.id+'::'+item] === 'urgent') urgentTags.push(item); });
+    if(items.length){
+      let line = '- '+cat.label+': '+items.join(', ');
+      if(cat.id === 'lab'){ const tag = getTubeOrderTag(state.tasks.lab||[]); if(tag) line += '  '+tag; }
+      taskLines.push(line);
+    }
+  });
+  if(taskLines.length || freeNoteVal){
     L.push('[Pending Tasks / Notes]');
-    if(followList.length) L.push('- '+followList.join(', '));
+    if(urgentTags.length) L.push('⚠ ด่วนที่สุด: '+urgentTags.join(', '));
+    taskLines.forEach(l=>L.push(l));
     if(freeNoteVal) L.push('- '+freeNoteVal);
   }
 
   return L.join('\n');
 }
 function updateSlip(){ document.getElementById('slip').textContent = buildSlipText(); document.getElementById('labelSlip').textContent = buildLabelText(); }
-function onRecordedByChange(){ state.recordedBy = document.getElementById('recordedBy').value.trim(); updateSlip(); }
+function onRecordedByChange(){
+  state.recordedBy = document.getElementById('recordedBy').value.trim();
+  document.getElementById('recordedBy').style.borderColor = state.recordedBy ? '' : 'var(--crit)';
+  updateSlip();
+}
+function requireRecordedBy(){
+  if(!state.recordedBy){
+    document.getElementById('recordedBy').style.borderColor = 'var(--crit)';
+    document.getElementById('recordedBy').scrollIntoView({behavior:'smooth', block:'center'});
+    document.getElementById('recordedBy').focus();
+    alert('⚠️ กรุณากรอก "ชื่อผู้บันทึก" ก่อน\n\nยังไม่ได้บันทึกชื่อผู้กรอกข้อมูล กรุณากรอกชื่อผู้ส่งเวร/ผู้บันทึกในช่องด้านบนก่อนพิมพ์/คัดลอก/แชร์ข้อมูล เพื่อความรับผิดชอบในการส่งต่อข้อมูล');
+    return false;
+  }
+  return true;
+}
 
 function buildLabelText(){
   const W = state.printWidth === '58' ? 24 : 32;
   const L = [];
   L.push('*'.repeat(W));
-  L.push((document.getElementById('pname').value||'- ไม่ระบุชื่อ -'));
+  L.push('TODO LIST — '+(document.getElementById('pname').value||'- ไม่ระบุชื่อ -'));
   L.push('HN: '+(document.getElementById('hn').value||'-')+'   เตียง '+(state.bed||'-'));
-  const allDx = [...state.dx, ...state.dxCustom];
-  if(allDx.length) L.push('Dx: '+allDx.join(', '));
-  L.push('Admit: '+(state.admitDate||'-')+'  Day '+(document.getElementById('calculatedStay').textContent.match(/Day\s*(\d+)/)?.[1] || '-'));
+  L.push('-'.repeat(W));
+  let any = false;
+  TASK_CATEGORIES.forEach(cat=>{
+    const items = [...(state.tasks[cat.id]||[])];
+    const custom = (state.tasksCustom[cat.id]||'').trim();
+    if(custom) items.push(custom);
+    if(items.length){
+      any = true;
+      L.push(cat.icon ? cat.icon+' '+cat.label : cat.label);
+      if(cat.id === 'lab'){
+        const tubeTag = getTubeOrderTag(state.tasks.lab || []);
+        if(tubeTag) L.push('  ➔ '+tubeTag);
+      }
+      items.forEach(it=> L.push('  ☐ '+(state.taskPriority[cat.id+'::'+it]==='urgent' ? '⚠ ' : '')+it));
+    }
+  });
+  const freeNoteVal = document.getElementById('freeNote')?.value?.trim();
+  if(freeNoteVal){ any = true; L.push('อื่นๆ'); L.push('  ☐ '+freeNoteVal); }
+  if(!any) L.push('(ยังไม่มีรายการ — เลือกจาก "สิ่งที่ต้องส่งต่อ" ด้านบนก่อน)');
+  L.push('-'.repeat(W));
   L.push('เวร: '+(state.shift||'-')+'  ผู้บันทึก: '+(state.recordedBy||'-'));
   const now = new Date();
   L.push('พิมพ์: '+now.toLocaleDateString('th-TH')+' '+now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}));
@@ -1077,41 +2064,173 @@ function applyPrintStyle(widthMM, areaId){
   }`;
   document.getElementById('dynamicPrintStyle').textContent = css;
 }
-function printSlip(){ applyPrintStyle(state.printWidth, 'printArea'); setTimeout(()=>window.print(), 50); }
-function printLabel(){ applyPrintStyle(state.printWidth, 'labelPrintArea'); setTimeout(()=>window.print(), 50); }
+function printSlip(){ if(!requireRecordedBy()) return; applyPrintStyle(state.printWidth, 'printArea'); setTimeout(()=>window.print(), 50); }
+function printLabel(){ if(!requireRecordedBy()) return; applyPrintStyle(state.printWidth, 'labelPrintArea'); setTimeout(()=>window.print(), 50); }
 function renderPrintWidthGrid(){
   const c = document.getElementById('printWidthGrid'); c.innerHTML = '';
   [['58','58 มม. (สติกเกอร์/ซองยา)'],['80','80 มม. (สลิปมาตรฐาน)']].forEach(([val,label])=>{
     const isOn = state.printWidth === val;
     const b = document.createElement('button'); b.className = 'chip chip-flat' + (isOn?' on':''); b.style.background = isOn ? 'var(--spo2)' : ''; b.textContent = label;
     b.onclick = ()=>{ state.printWidth = val; renderPrintWidthGrid();
-      document.getElementById('printSlipBtn').textContent = '🖨️ พิมพ์สลิป SBAR ('+val+'mm)';
-      document.getElementById('printLabelBtn').textContent = '🏷️ พิมพ์สติกเกอร์ซองยา ('+val+'mm)';
+      document.getElementById('printSlipBtn').textContent = 'พิมพ์ใบเสร็จ SBAR ('+val+'mm)';
+      document.getElementById('printLabelBtn').textContent = 'พิมพ์สติกเกอร์ Todo List ('+val+'mm)';
     };
     c.appendChild(b);
   });
 }
 renderPrintWidthGrid();
-document.getElementById('printSlipBtn').textContent = '🖨️ พิมพ์สลิป SBAR (80mm)';
-document.getElementById('printLabelBtn').textContent = '🏷️ พิมพ์สติกเกอร์ซองยา (80mm)';
+document.getElementById('printSlipBtn').textContent = 'พิมพ์ใบเสร็จ SBAR (80mm)';
+document.getElementById('printLabelBtn').textContent = 'พิมพ์สติกเกอร์ Todo List (80mm)';
 async function copySlip(){
+  if(!requireRecordedBy()) return;
   await navigator.clipboard.writeText(buildSlipText());
   const t = document.getElementById('copyToast'); t.classList.remove('hidden');
   setTimeout(()=>t.classList.add('hidden'), 2000);
 }
 function shareLine(){
+  if(!requireRecordedBy()) return;
   const text = buildSlipText(true);
   const url = 'https://line.me/R/msg/text/?' + encodeURIComponent(text);
   window.open(url, '_blank');
 }
 updateSlip();
-</script>
-<script>
-/* PWA: register service worker */
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js').catch(err => console.log('SW registration failed:', err));
+
+/* ================= Sidebar #5: Preview คนไข้ / Body Map & Line-Tube Mapping ================= */
+// Fixed anchors for devices that don't have a left/right position (ETT/Trach/Foley)
+const BMAP_FIXED_COORDS = { ett:{x:150,y:60}, trach:{x:150,y:95}, foley:{x:150,y:335} };
+// Coordinates keyed by the exact strings in POSITION_OPTS (left/right aware)
+const BMAP_POSITION_COORDS = {
+  'มือซ้าย': {x:40,y:300}, 'มือขวา': {x:260,y:300},
+  'แขนซ้าย': {x:65,y:235}, 'แขนขวา': {x:235,y:235},
+  'คอซ้าย (Left IJ)': {x:120,y:78}, 'คอขวา (Right IJ)': {x:180,y:78},
+  'ขาหนีบซ้าย (Left Femoral)': {x:118,y:345}, 'ขาหนีบขวา (Right Femoral)': {x:182,y:345},
+  'ทรวงอกซ้าย': {x:112,y:165}, 'ทรวงอกขวา': {x:188,y:165}
+};
+// Fallback anchor per device when position is empty or ="อื่นๆ" (custom text)
+const BMAP_FALLBACK_COORDS = { aline:{x:150,y:242}, heplock:{x:150,y:248}, cvc:{x:150,y:90}, crrt:{x:150,y:96}, icd:{x:150,y:170} };
+const BMAP_CATEGORY = { ett:'airway', trach:'airway', aline:'vascular', cvc:'vascular', heplock:'vascular', crrt:'vascular', foley:'drainage', icd:'drainage' };
+const BMAP_ABBR = { ett:'ETT', trach:'Trach', aline:'A-line', cvc:'CVC', heplock:'Hep/PIV', foley:'Foley', icd:'ICD', crrt:'CRRT' };
+
+function bmapCoord(defId, ld){
+  if(BMAP_FIXED_COORDS[defId]) return BMAP_FIXED_COORDS[defId];
+  if(ld && ld.position && BMAP_POSITION_COORDS[ld.position]) return BMAP_POSITION_COORDS[ld.position];
+  return BMAP_FALLBACK_COORDS[defId] || {x:150,y:200};
+}
+
+function setBodyMapGender(g){
+  state.gender = g;
+  document.getElementById('bodyMapSvg').setAttribute('data-gender', g);
+  document.querySelectorAll('.gender-btn').forEach(b=> b.classList.toggle('on', b.dataset.gender === g));
+}
+
+function renderBodyMap(){
+  const layer = document.getElementById('bodyMapMarkers');
+  const legend = document.getElementById('bodyMapLegend');
+  layer.innerHTML = ''; legend.innerHTML = '';
+  const activeDefs = LINES_DEF.filter(d => !!state.lines[d.id]);
+  if(!activeDefs.length){
+    legend.innerHTML = '<p class="note" style="text-align:center; padding:6px 0;">ยังไม่ได้ติ๊กเลือกสาย/ท่อใดๆ — ไปที่ "ติ๊กเลือกสาย/ท่อระบายในร่างกาย" ในฟอร์มก่อน</p>';
+  }
+  activeDefs.forEach(def=>{
+    const ld = state.lines[def.id];
+    const pos = bmapCoord(def.id, ld);
+    const cat = BMAP_CATEGORY[def.id];
+    const color = cat === 'airway' ? 'var(--crit)' : cat === 'vascular' ? 'var(--spo2)' : 'var(--amber)';
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.innerHTML =
+      `<circle cx="${pos.x}" cy="${pos.y}" r="9" fill="${color}" class="bmap-marker-pulse"></circle>` +
+      `<circle cx="${pos.x}" cy="${pos.y}" r="9" fill="${color}" stroke="#fff" stroke-width="2"></circle>` +
+      `<rect x="${pos.x-27}" y="${pos.y-28}" width="54" height="16" rx="8" fill="${color}"></rect>` +
+      `<text x="${pos.x}" y="${pos.y-17}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff" font-family="JetBrains Mono, monospace">${BMAP_ABBR[def.id]}</text>`;
+    layer.appendChild(g);
+
+    const row = document.createElement('div');
+    row.className = 'bmap-legend-row';
+    const parts = [];
+    if(ld.position) parts.push(ld.position);
+    if(ld.amount) parts.push('Secretion: '+ld.amount+(ld.color ? ' ('+ld.color+')' : ''));
+    if(ld.note) parts.push(ld.note);
+    row.innerHTML = `<span class="bmap-dot" style="background:${color};"></span><b>${def.name}</b><span class="bmap-detail">${parts.join(' • ') || 'ยังไม่ระบุรายละเอียด'}</span>`;
+    legend.appendChild(row);
   });
+  document.getElementById('bodyMapSbarPreview').textContent = buildSlipText();
+}
+
+function openBodyMapModal(){
+  renderBodyMap();
+  document.getElementById('bodyMapModal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeBodyMapModal(){
+  document.getElementById('bodyMapModal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+/* ================= Sidebar #6: Save & Export Options ================= */
+function openExportModal(){
+  document.getElementById('exportModal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  // reset to the "confirm save" gate every time the modal opens, so export options
+  // are never shown for data that hasn't been (re)confirmed as saved this session
+  document.getElementById('saveConfirmBtn').classList.remove('hidden');
+  document.getElementById('saveSuccessMsg').classList.add('hidden');
+  document.getElementById('exportOptionsWrap').classList.add('hidden');
+}
+function closeExportModal(){
+  document.getElementById('exportModal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+function confirmSaveRecord(){
+  if(!requireRecordedBy()) return;
+  try{
+    const snapshot = { savedAt: new Date().toISOString(), bed: state.bed, hn: document.getElementById('hn').value, slip: buildSlipText() };
+    localStorage.setItem('icu_handover_last_saved_'+(state.bed||'x'), JSON.stringify(snapshot));
+  }catch(e){ console.warn('บันทึกสำรองข้อมูลไม่สำเร็จ', e); }
+  document.getElementById('saveConfirmBtn').classList.add('hidden');
+  document.getElementById('saveSuccessMsg').classList.remove('hidden');
+  document.getElementById('exportOptionsWrap').classList.remove('hidden');
+}
+async function copySlipFromModal(){
+  await copySlip();
+  const t = document.getElementById('copyToastModal');
+  if(t){ t.classList.remove('hidden'); setTimeout(()=> t.classList.add('hidden'), 2000); }
+}
+
+/* ---------------- Service Worker registration + update-detection ----------------
+   ทำให้มือถือเจอเวอร์ชันล่าสุดเสมอ: พอ SW ใหม่พร้อม (state=='installed' ขณะมี controller เดิมอยู่แล้ว)
+   จะโชว์แบนเนอร์ "มีเวอร์ชันใหม่" ให้ผู้ใช้กดอัปเดตเอง (ไม่บังคับ reload กลางคันขณะกำลังกรอกข้อมูล) */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./sw.js').then(reg=>{
+      reg.addEventListener('updatefound', ()=>{
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', ()=>{
+          if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
+            showUpdateBanner(newWorker);
+          }
+        });
+      });
+    }).catch(err=> console.warn('SW registration failed:', err));
+  });
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+    if(refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+}
+function showUpdateBanner(newWorker){
+  if(document.getElementById('swUpdateBanner')) return;
+  const bar = document.createElement('div');
+  bar.id = 'swUpdateBanner';
+  bar.style.cssText = 'position:fixed; left:56px; right:0; bottom:0; z-index:60; background:var(--violet); color:#1a0b2e; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px; font-weight:600; font-size:13.5px; box-shadow:0 -4px 16px rgba(0,0,0,.25);';
+  bar.innerHTML = `<span>มีเวอร์ชันใหม่ของแอป — ข้อมูลที่กรอกในเครื่องจะไม่หาย</span>`;
+  const btn = document.createElement('button');
+  btn.textContent = 'อัปเดตตอนนี้'; btn.className = 'px-4 py-1.5 rounded-lg';
+  btn.style.cssText = 'background:#1a0b2e; color:#fff; font-weight:700;';
+  btn.onclick = ()=>{ newWorker.postMessage('SKIP_WAITING'); bar.remove(); };
+  bar.appendChild(btn);
+  document.body.appendChild(bar);
 }
 </script>
 </body>
